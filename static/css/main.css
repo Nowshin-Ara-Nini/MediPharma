@@ -1,0 +1,45 @@
+:root{--brand:#26a69a;--ink:#222;--muted:#6b7280;--bg:#f6f9fb}
+html,body{height:100%}
+body{font-family:Segoe UI,Arial,sans-serif;background: linear-gradient(135deg, #e0f7fa, #80deea)};
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.site-header{background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.06);position:sticky;top:0;z-index:10}
+.site-header .wrap{display:flex;gap:16px;align-items:center;justify-content:space-between}
+/* .logo{font-weight:800;color:var(--brand);text-decoration:none} */
+nav a{margin:0 8px;text-decoration:none;color:var(--ink)}
+nav .btn{background:var(--brand);color:#fff;padding:8px 12px;border-radius:8px}
+.flash-wrap{position:fixed;right:16px;top:16px;display:flex;flex-direction:column;gap:8px}
+.flash{padding:10px 14px;border-radius:8px;background:#eef;border-left:4px solid var(--brand)}
+.flash.error{background:#fee;border-color:#e11}
+.flash.success{background:#efe;border-color:#1a1}
+.hero{padding:80px 0;text-align:center}
+.btn{background:var(--brand);color:#fff;border:0;border-radius:10px;padding:10px 14px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--brand);border:1px solid var(--brand)}
+.btn.small{font-size:.9rem;padding:6px 10px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;justify-content:center;padding-top:10px;}
+.filters input[type=text], .filters select{padding:8px 10px;border:1px solid #ddd;border-radius:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.card{background:#fff;border:1px solid #eee;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.card-hd{display:flex;justify-content:space-between;align-items:center}
+.desc{color:var(--muted)}
+.meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.badge{padding:4px 8px;border-radius:999px;font-size:.8rem}
+.badge.ok{background:#e6f7ef;color:#0a7a52}
+.badge.low{background:#fff7e6;color:#a15c00}
+.badge.out{background:#fee2e2;color:#991b1b}
+.expiry{color:#555}
+.expiry.soon{color:#a15c00;font-weight:600}
+.table{width:100%;border-collapse:collapse;background:#fff}
+.table th,.table td{padding:10px;border-bottom:1px solid #eee}
+.inline{display:inline}
+.checkout{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.checkout textarea{flex:1;min-width:240px;height:80px;padding:10px;border:1px solid #ddd;border-radius:8px}
+.checkout select{padding:10px;border:1px solid #ddd;border-radius:8px}
+.totals{margin-top:10px}
+.logo{
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+     }

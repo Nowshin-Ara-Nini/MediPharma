@@ -1,88 +1,924 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MediPharma – Medicine Selling Platform</title>
-  <link rel="stylesheet" href="style.css"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediPharma - Online Medicine Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+            margin-bottom: 2rem;
+            border-radius: 15px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a, .user-actions button {
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .nav-links a:hover {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-actions button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .user-actions button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .cart-count, .wishlist-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Search and Filter Section */
+        .search-filter-section {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 1rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 15px;
+            font-size: 1rem;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .search-btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .filter-group select, .filter-group input {
+            padding: 0.8rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .filter-group select:focus, .filter-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* Products Grid */
+        .products-section {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+
+        .product-info h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .product-description {
+            color: #666;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .product-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .price {
+            font-size: 1.4rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stock-status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .in-stock { background: #d4edda; color: #155724; }
+        .low-stock { background: #fff3cd; color: #856404; }
+        .out-of-stock { background: #f8d7da; color: #721c24; }
+
+        .expiry-date {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stars {
+            color: #ffa500;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e1e8ed;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Cart and Wishlist Sidebar */
+        .sidebar {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 400px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            transition: right 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .sidebar.active {
+            right: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e1e8ed;
+        }
+
+        .sidebar-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .cart-item, .wishlist-item {
+            padding: 1rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 15px;
+            margin-bottom: 1rem;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .cart-item:hover, .wishlist-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .item-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .item-price {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .quantity-btn {
+            width: 35px;
+            height: 35px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .quantity-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .quantity {
+            font-weight: bold;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .checkout-section {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 1.5rem;
+            border-top: 2px solid #e1e8ed;
+            margin: 0 -2rem -2rem -2rem;
+        }
+
+        .total-amount {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e1e8ed;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.2);
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            z-index: 3000;
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+
+        .notification.error {
+            background: linear-gradient(45deg, #dc3545, #fd7e14);
+        }
+
+        .notification.info {
+            background: linear-gradient(45deg, #17a2b8, #6f42c1);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .nav-links {
+                justify-content: center;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .search-input {
+                min-width: unset;
+            }
+
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                width: 100%;
+                right: -100%;
+            }
+
+            .product-actions {
+                justify-content: center;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .fab:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.6);
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="header-content">
+                <div class="logo">🏥 MediPharma</div>
+                <nav class="nav-links">
+                    <a href="#" onclick="showSection('home')">Home</a>
+                    <a href="#" onclick="showSection('medicines')">Medicines</a>
+                    <a href="#" onclick="showSection('pharmacies')">Pharmacies</a>
+                    <a href="#" onclick="showSection('about')">About</a>
+                </nav>
+                <div class="user-actions">
+                    <button onclick="toggleSidebar('wishlist')">
+                        ❤️ Wishlist
+                        <span class="wishlist-count" id="wishlistCount">0</span>
+                    </button>
+                    <button onclick="toggleSidebar('cart')">
+                        🛒 Cart
+                        <span class="cart-count" id="cartCount">0</span>
+                    </button>
+                    <button onclick="openModal('loginModal')">Login</button>
+                </div>
+            </div>
+        </header>
 
-  <!-- Navbar -->
-  <header>
-    <nav class="navbar">
-      <div class="logo">MediPharma</div>
-      <ul class="nav-links">
-        <li><a href="#features">Features</a></li>
-        <li><a href="#cart">Cart</a></li>
-        <li><a href="#feedback">Feedback</a></li>
-        <li><a href="#dashboard">Dashboard</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
-    </nav>
-  </header>
+        <!-- Search and Filter Section -->
+        <div class="search-filter-section">
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="Search medicines, brands, or compositions..." id="searchInput">
+                <button class="search-btn" onclick="searchMedicines()">🔍 Search</button>
+            </div>
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Category</label>
+                    <select id="categoryFilter" onchange="applyFilters()">
+                        <option value="">All Categories</option>
+                        <option value="prescription">Prescription</option>
+                        <option value="otc">Over the Counter</option>
+                        <option value="vitamins">Vitamins & Supplements</option>
+                        <option value="first-aid">First Aid</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Price Range</label>
+                    <select id="priceFilter" onchange="applyFilters()">
+                        <option value="">All Prices</option>
+                        <option value="0-100">৳0 - ৳100</option>
+                        <option value="101-500">৳101 - ৳500</option>
+                        <option value="501-1000">৳501 - ৳1000</option>
+                        <option value="1001+">৳1001+</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Sort By</label>
+                    <select id="sortFilter" onchange="applyFilters()">
+                        <option value="name">Name A-Z</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="rating">Rating</option>
+                        <option value="expiry">Expiry Date</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Stock Status</label>
+                    <select id="stockFilter" onchange="applyFilters()">
+                        <option value="">All Stock</option>
+                        <option value="in-stock">In Stock</option>
+                        <option value="low-stock">Low Stock</option>
+                    </select>
+                </div>
+            </div>
+        </div>
 
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1>Welcome to MediPharma</h1>
-      <p>Your trusted platform to buy and manage medicines securely.</p>
-      <a href="#features" class="btn">Explore Features</a>
+        <!-- Products Section -->
+        <div class="products-section">
+            <h2 class="section-title">Available Medicines</h2>
+            <div class="products-grid" id="productsGrid">
+                <!-- Products will be loaded here dynamically -->
+            </div>
+        </div>
     </div>
-  </section>
 
-  <!-- Features Section -->
-  <section class="features" id="features">
-    <h2>Platform Features</h2>
-    <div class="feature-grid">
-
-      <div class="feature-box">
-        <h3>💬 AI Health Assistant</h3>
-        <p>Get answers to your health questions with our intelligent chatbot.</p>
-      </div>
-
-      <div class="feature-box">
-        <h3>💸 Price Comparison</h3>
-        <p>Compare prices and find affordable options across brands.</p>
-      </div>
-
-      <div class="feature-box">
-        <h3>🛒 Cart & Wishlist</h3>
-        <p>Add medicines to your cart or wishlist. Track stock availability.</p>
-      </div>
-
-      <div class="feature-box">
-        <h3>⭐ Feedback System</h3>
-        <p>Rate and review medicines based on experience or sales.</p>
-      </div>
-
-      <div class="feature-box">
-        <h3>🔒 Secure Payments</h3>
-        <p>Pay using cards, mobile banking, or wallets with full encryption.</p>
-      </div>
-
-      <div class="feature-box">
-        <h3>⏰ Expiry Alerts</h3>
-        <p>Get notified when your medicines or stock are near expiry.</p>
-      </div>
-
-      <div class="feature-box">
-        <h3>📩 Notifications</h3>
-        <p>Receive emails for orders, stock updates, and refill reminders.</p>
-      </div>
-
-      <div class="feature-box">
-        <h3>📊 Professional Dashboard</h3>
-        <p>Track inventory, sales, and pharmacy/company performance.</p>
-      </div>
-
+    <!-- Cart Sidebar -->
+    <div class="sidebar" id="cartSidebar">
+        <div class="sidebar-header">
+            <h3 class="sidebar-title">🛒 Your Cart</h3>
+            <button class="close-btn" onclick="closeSidebar('cart')">&times;</button>
+        </div>
+        <div id="cartItems">
+            <p style="text-align: center; color: #666; padding: 2rem;">Your cart is empty</p>
+        </div>
+        <div class="checkout-section">
+            <div class="total-amount">Total: ৳<span id="cartTotal">0</span></div>
+            <button class="checkout-btn" onclick="openModal('checkoutModal')">
+                Proceed to Checkout
+            </button>
+        </div>
     </div>
-  </section>
 
-  <!-- Footer -->
-  <footer id="contact">
-    <p>© 2025 MediPharma. All rights reserved.</p>
-  </footer>
+    <!-- Wishlist Sidebar -->
+    <div class="sidebar" id="wishlistSidebar">
+        <div class="sidebar-header">
+            <h3 class="sidebar-title">❤️ Your Wishlist</h3>
+            <button class="close-btn" onclick="closeSidebar('wishlist')">&times;</button>
+        </div>
+        <div id="wishlistItems">
+            <p style="text-align: center; color: #666; padding: 2rem;">Your wishlist is empty</p>
+        </div>
+    </div>
 
-</body>
-</html>
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Login to MediPharma</h3>
+                <button class="close-btn" onclick="closeModal('loginModal')">&times;</button>
+            </div>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" required placeholder="Enter your password">
+                </div>
+                <div class="form-group">
+                    <label>User Type</label>
+                    <select required>
+                        <option value="">Select user type</option>
+                        <option value="customer">Customer</option>
+                        <option value="pharmacist">Pharmacist</option>
+                        <option value="company">Company</option>
+                        <option value="doctor">Doctor</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+            </form>
+            <p style="text-align: center; margin-top: 1rem;">
+                Don't have an account? <a href="#" onclick="openModal('registerModal'); closeModal('loginModal');" style="color: #667eea;">Register here</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Register with MediPharma</h3>
+                <button class="close-btn" onclick="closeModal('registerModal')">&times;</button>
+            </div>
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" required placeholder="Enter your full name">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" required placeholder="Enter your phone number">
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <textarea required placeholder="Enter your address"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>User Type</label>
+                    <select required onchange="toggleLicenseField(this.value)">
+                        <option value="">Select user type</option>
+                        <option value="customer">Customer</option>
+                        <option value="pharmacist">Pharmacist</option>
+                        <option value="company">Company</option>
+                        <option value="doctor">Doctor</option>
+                    </select>
+                </div>
+                <div class="form-group" id="licenseField" style="display: none;">
+                    <label>License Number</label>
+                    <input type="text" placeholder="Enter your license number">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" required placeholder="Create a password">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Register</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div class="modal" id="checkoutModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Checkout</h3>
+                <button class="close-btn" onclick="closeModal('checkoutModal')">&times;</button>
+            </div>
+            <form onsubmit="handleCheckout(event)">
+                <div class="form-group">
+                    <label>Delivery Address</label>
+                    <textarea required placeholder="Enter your delivery address"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Payment Method</label>
+                    <select required>
+                        <option value="">Select payment method</option>
+                        <option value="bkash">bKash</option>
+                        <option value="nagad">Nagad</option>
+                        <option value="card">Credit/Debit Card</option>
+                        <option value="cod">Cash on Delivery</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Special Instructions</label>
+                    <textarea placeholder="Any special delivery instructions?"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Place Order</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification"></div>
+
+    <!-- Footer -->
+    <footer style="padding: 2rem 0; margin-top: 3rem; text-align: center; color: white; font-size: 0.9rem;">
+        <div class="container">
+            <p>© 2025 MediPharma. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Floating Action Button -->
+    <button class="fab" onclick="scrollToTop()" title="Scroll to Top">⬆️</button>
+
+    <script>
+        // Sample data
+        let medicines = [
+            {
+                id: 1,
+                name: "Paracetamol 500mg",
+                description: "Pain relief and fever reducer",
+                price: 25,
+                stock: "in-stock",
+                rating: 4.5,
+                expiry: "2025-12-31",
+                category: "otc",
+                manufacturer: "Square Pharmaceuticals"
+            },
+            {
+                id: 2,
+                name: "Amoxicillin 250mg",
+                description:

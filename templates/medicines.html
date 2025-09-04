@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block content %}
+<form class="filters" method="get">
+  <input type="text" name="q" placeholder="Search medicines..." value="{{ q }}">
+  <select name="price">
+    <option value="">All prices</option>
+    <option value="0-100" {{ 'selected' if price=='0-100' }}>৳0-৳100</option>
+    <option value="101-500" {{ 'selected' if price=='101-500' }}>৳101-৳500</option>
+    <option value="501-1000" {{ 'selected' if price=='501-1000' }}>৳501-৳1000</option>
+    <option value="1001+" {{ 'selected' if price=='1001+' }}>৳1001+</option>
+  </select>
+  <select name="sort">
+    <option value="name" {{ 'selected' if sort=='name' }}>Name</option>
+    <option value="price-low" {{ 'selected' if sort=='price-low' }}>Price: Low→High</option>
+    <option value="price-high" {{ 'selected' if sort=='price-high' }}>Price: High→Low</option>
+    <option value="expiry" {{ 'selected' if sort=='expiry' }}>Expiry Date</option>
+  </select>
+  <select name="stock">
+    <option value="" {{ 'selected' if not stock_filter }}>All stock</option>
+    <option value="in-stock" {{ 'selected' if stock_filter=='in-stock' }}>In stock</option>
+    <option value="low-stock" {{ 'selected' if stock_filter=='low-stock' }}>Low stock</option>
+  </select>
+  <label class="checkbox"><input type="checkbox" name="hide_expired" value="1" {% if hide_expired %}checked{% endif %}> Hide expired</label>
+  <button class="btn" type="submit">Apply</button>
+</form>
+
+<div class="grid">
+{% for m in meds %}
+  <div class="card">
+    <div class="card-hd">
+      <h3>{{ m.name }}</h3>
+      <div class="price">৳{{ '%.2f'|format(m.price) }}</div>
+    </div>
+    <p class="desc">{{ m.description or '' }}</p>
+    <div class="meta">
+      <span class="badge {{ 'ok' if m.stock>10 else ('low' if m.stock>0 else 'out') }}">{{ 'In stock' if m.stock>10 else ('Low stock' if m.stock>0 else 'Out of stock') }}</span>
+      {% if m.expiry_date %}
+        <span class="expiry {% if m.expiry_soon %}soon{% endif %}">Expiry: {{ m.expiry_date }}</span>
+      {% endif %}
+    </div>
+    <form class="row" action="{{ url_for('shop.cart_add') }}" method="post" onsubmit="return addToCart(event, {{ m.medicine_id }})">
+      <input type="hidden" name="medicine_id" value="{{ m.medicine_id }}">
+      <input type="number" name="qty" value="1" min="1">
+      <button class="btn">Add to cart</button>
+      <button class="btn ghost" onclick="return toggleWishlist(event, {{ m.medicine_id }})">♡ Wishlist</button>
+    </form>
+    <form class="row small" method="post" action="{{ url_for('feedback.leave_feedback') }}">
+      <input type="hidden" name="medicine_id" value="{{ m.medicine_id }}">
+      <label>Rate:</label>
+      <select name="rating">
+        {% for r in range(1,6) %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
+      </select>
+      <input type="text" name="comments" placeholder="Optional comment">
+      <button class="btn ghost">Submit</button>
+    </form>
+  </div>
+{% else %}
+  <p>No medicines found.</p>
+{% endfor %}
+</div>
+{% endblock %}

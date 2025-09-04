@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Your Wishlist</h2>
+<div class="grid">
+{% for m in items %}
+  <div class="card">
+    <h3>{{ m.name }}</h3>
+    <div>৳{{ '%.2f'|format(m.price) }}</div>
+    <form action="{{ url_for('shop.cart_add') }}" method="post" onsubmit="return addToCart(event, {{ m.medicine_id }})">
+      <input type="hidden" name="medicine_id" value="{{ m.medicine_id }}">
+      <button class="btn">Add to cart</button>
+    </form>
+  </div>
+{% else %}
+  <p>Your wishlist is empty.</p>
+{% endfor %}
+</div>
+{% endblock %}

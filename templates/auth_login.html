@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login • MediPharma</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h2>Login</h2>
+    <form method="post" action="{{ url_for('auth.login_submit') }}">
+      <div class="input-group"><label>Email</label><input type="email" name="email" required></div>
+      <div class="input-group"><label>Password</label><input type="password" name="password" required></div>
+      <div class="input-group">
+        <label>User Type</label>
+        <select name="role" required>
+          <option value="">Select user type</option>
+          <option value="customer">Customer</option>
+          <option value="pharmacist">Pharmacist</option>
+          <option value="company">Company</option>
+          <option value="doctor">Doctor</option>
+        </select>
+      </div>
+      <button type="submit">Login</button>
+      <div class="toggle-link">No account? <a href="{{ url_for('auth.register_page') }}">Register</a></div>
+    </form>
+  </div>
+</body>
+</html>

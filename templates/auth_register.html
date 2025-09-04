@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register • MediPharma</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+  <script>
+    function toggleLicenseField(){
+      const role = document.querySelector('select[name="role"]').value;
+      document.getElementById('license_group').style.display = (role==='pharmacist'||role==='company'||role==='doctor') ? 'block' : 'none';
+    }
+  </script>
+</head>
+<body onload="toggleLicenseField()">
+  <div class="container">
+    <h2>Sign up</h2>
+    <form method="post" action="{{ url_for('auth.register_submit') }}">
+      <div class="input-group"><label>Full Name</label><input type="text" name="name" required></div>
+      <div class="input-group"><label>Email</label><input type="email" name="email" required></div>
+      <div class="input-group"><label>Phone</label><input type="tel" name="phone" required></div>
+      <div class="input-group"><label>Address</label><input type="text" name="address" required></div>
+      <div class="input-group"><label>User Type</label>
+        <select name="role" required onchange="toggleLicenseField()">
+          <option value="">Select user type</option>
+          <option value="customer">Customer</option>
+          <option value="pharmacist">Pharmacist</option>
+          <option value="company">Company</option>
+          <option value="doctor">Doctor</option>
+        </select>
+      </div>
+      <div class="input-group" id="license_group" style="display:none"><label>License Number</label><input name="license_no" type="text"></div>
+      <div class="input-group"><label>Password</label><input type="password" name="password" required></div>
+      <button type="submit">Create Account</button>
+      <div class="toggle-link">Have an account? <a href="{{ url_for('auth.login_page') }}">Login</a></div>
+    </form>
+  </div>
+</body>
+</html>

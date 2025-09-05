@@ -18,7 +18,8 @@ CREATE TABLE `appointments` (
   `customer_id` bigint(20) UNSIGNED NOT NULL,
   `doctor_id` bigint(20) UNSIGNED NOT NULL,
   `scheduled_at` datetime NOT NULL,
-  `note` text DEFAULT NULL
+  `patient_records` varchar(255) DEFAULT NULL,
+  `prescriptions` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
@@ -147,7 +148,9 @@ CREATE TABLE `users` (
   `phone` bigint(20) UNSIGNED NOT NULL,
   `email` varchar(190) NOT NULL,
   `address` varchar(255) DEFAULT NULL,
-  `password_hash` varchar(255) NOT NULL
+  `password_hash` varchar(255) NOT NULL,
+  `status` varchar(20) DEFAULT 'active',
+  `role` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

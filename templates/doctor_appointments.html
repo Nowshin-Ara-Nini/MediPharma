@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>My Appointments</h2>
+<table>
+  <tr><th>Customer</th><th>Time</th><th>Records</th><th>Prescriptions</th><th>Actions</th></tr>
+  {% for appt in appointments %}
+  <tr>
+    <td>{{ appt.customer_id }}</td>
+    <td>{{ appt.scheduled_at }}</td>
+    <td>{{ appt.patient_records or "-" }}</td>
+    <td>{{ appt.prescriptions or "-" }}</td>
+    <td>
+      <form method="post" action="{{ url_for('doctor.update_appointment', appointment_id=appt.appointment_id) }}">
+        <textarea name="patient_records" placeholder="Records">{{ appt.patient_records }}</textarea>
+        <textarea name="prescriptions" placeholder="Prescriptions">{{ appt.prescriptions }}</textarea>
+        <button type="submit">Save</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

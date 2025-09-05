@@ -27,3 +27,16 @@ def doctor_notes():
         cur.execute("SELECT * FROM notes WHERE doctor_id=%s", (session["uid"],))
         notes = cur.fetchall()
     return render_template("doctor_notes.html", notes=notes)
+
+@doctor_bp.post("/update_appointment/<int:appointment_id>")
+def update_appointment(appointment_id):
+    patient_records = request.form.get("patient_records")
+    prescriptions = request.form.get("prescriptions")
+    with DB() as cur:
+        cur.execute("""
+            UPDATE appointments
+            SET patient_records=%s, prescriptions=%s
+            WHERE appointment_id=%s AND doctor_id=%s
+        """, (patient_records, prescriptions, appointment_id, session["uid"]))
+    flash("Appointment updated successfully")
+    return redirect(url_for("doctor.doctor_appointments"))

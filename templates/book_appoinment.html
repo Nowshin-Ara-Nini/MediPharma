@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Book Appointment</h2>
+<form method="post">
+  <label for="doctor">Choose Doctor:</label>
+  <select name="doctor_id" required>
+    {% for d in doctors %}
+      <option value="{{ d.user_id }}">{{ d.doctor_name }} ({{ d.specialty }})</option>
+    {% endfor %}
+  </select>
+
+  <label for="scheduled_at">Date & Time:</label>
+  <input type="datetime-local" name="scheduled_at" required>
+
+  <button type="submit" class="btn">Book</button>
+</form>
+{% endblock %}

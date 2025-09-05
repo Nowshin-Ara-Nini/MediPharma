@@ -6,3 +6,15 @@
   <a href="{{ url_for('shop.medicines') }}" class="btn">Browse medicines</a>
 </section>
 {% endblock %}
+
+{% extends "base.html" %}
+{% block content %}
+<h1>Welcome to MediPharma</h1>
+
+<nav>
+  <ul>
+    <li><a href="{{ url_for('customer.book_appointment') }}">Book Appointment</a></li>
+    <li><a href="{{ url_for('doctor.doctor_appointments') }}">Doctor Appointments</a></li>
+  </ul>
+</nav>
+{% endblock %}

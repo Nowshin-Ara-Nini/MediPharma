@@ -11,8 +11,8 @@ ROLE_TABLES = {
     "admin": "admins",
 }
 
+def current_user_role():
+    return session.get("role")
+
 def current_user_id():
     return session.get("uid")
-
-def current_role():
-    return session.get("role")

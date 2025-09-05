@@ -5,16 +5,73 @@
   <title>Register • MediPharma</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
   <script>
+    let agreementAccepted = false;
+
     function toggleLicenseField(){
       const role = document.querySelector('select[name="role"]').value;
       document.getElementById('license_group').style.display = (role==='pharmacist'||role==='company'||role==='doctor') ? 'block' : 'none';
+      document.getElementById('doctor_fields').style.display = (role==='doctor') ? 'block' : 'none';
+    }
+
+    function agreeYes() {
+      agreementAccepted = true;
+      document.getElementById('agreement_modal').style.display = 'none';
+      document.getElementById('cannot_create_msg').style.display = 'none';
+      // Submit the form after agreement
+      document.getElementById('register_form').submit();
+    }
+
+    function agreeNo() {
+      agreementAccepted = false;
+      document.getElementById('agreement_modal').style.display = 'none';
+      document.getElementById('cannot_create_msg').style.display = 'block';
+    }
+
+    function checkAgreement(event) {
+      const role = document.querySelector('select[name="role"]').value;
+      if ((role === 'pharmacist' || role === 'company') && !agreementAccepted) {
+        event.preventDefault();
+        document.getElementById('agreement_modal').style.display = 'block';
+        document.getElementById('cannot_create_msg').style.display = 'none';
+      }
+      // For other roles, allow normal submission
     }
   </script>
+  <style>
+    /* Simple modal styling */
+    #agreement_modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.5);
+    }
+    #agreement_modal .modal-content {
+      background: #fff;
+      padding: 2em;
+      margin: 10% auto;
+      width: 300px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    #agreement_modal button {
+      margin: 0 10px;
+    }
+    #cannot_create_msg {
+      display: none;
+      color: red;
+      text-align: center;
+      margin-top: 1em;
+    }
+    #doctor_fields {
+      display: none;
+    }
+  </style>
 </head>
 <body onload="toggleLicenseField()">
   <div class="container">
     <h2>Sign up</h2>
-    <form method="post" action="{{ url_for('auth.register_submit') }}">
+    <form id="register_form" method="post" action="{{ url_for('auth.register_submit') }}" onsubmit="checkAgreement(event)">
       <div class="input-group"><label>Full Name</label><input type="text" name="name" required></div>
       <div class="input-group"><label>Email</label><input type="email" name="email" required></div>
       <div class="input-group"><label>Phone</label><input type="tel" name="phone" required></div>
@@ -26,13 +83,27 @@
           <option value="pharmacist">Pharmacist</option>
           <option value="company">Company</option>
           <option value="doctor">Doctor</option>
+          <option value="admin">Admin</option>
         </select>
       </div>
       <div class="input-group" id="license_group" style="display:none"><label>License Number</label><input name="license_no" type="text"></div>
+      <div id="doctor_fields">
+        <div class="input-group"><label>Education</label><input type="text" name="education" required></div>
+        <div class="input-group"><label>Speciality</label><input type="text" name="speciality" required></div>
+      </div>
       <div class="input-group"><label>Password</label><input type="password" name="password" required></div>
       <button type="submit">Create Account</button>
+      <div id="cannot_create_msg">sorry can not create account</div>
       <div class="toggle-link">Have an account? <a href="{{ url_for('auth.login_page') }}">Login</a></div>
     </form>
+  </div>
+  <!-- Agreement Modal -->
+  <div id="agreement_modal">
+    <div class="modal-content">
+      <p>10% of your earnings will go to the admin panel.<br>Do you agree?</p>
+      <button type="button" onclick="agreeYes()">Yes</button>
+      <button type="button" onclick="agreeNo()">No</button>
+    </div>
   </div>
 </body>
 </html>

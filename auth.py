@@ -48,6 +48,8 @@ def register_submit():
     phone = request.form.get("phone"); address = request.form.get("address")
     role = request.form.get("role"); password = request.form.get("password")
     license_no = request.form.get("license_no")
+    education = request.form.get("education")
+    speciality = request.form.get("speciality")
     if not (name and email and phone and address and role and password):
         flash("All fields are required", "error"); return redirect(url_for("auth.register_page"))
     pw_hash = bcrypt.hash(password)
@@ -55,13 +57,16 @@ def register_submit():
         cur.execute("SELECT 1 FROM users WHERE email=%s", (email,))
         if cur.fetchone():
             flash("Email already registered", "error"); return redirect(url_for("auth.register_page"))
+        # Save role in users table
         cur.execute(
-            "INSERT INTO users(name, phone, email, address, password_hash) VALUES(%s,%s,%s,%s,%s)",
-            (name, phone, email, address, pw_hash)
+            "INSERT INTO users(name, phone, email, address, password_hash, role) VALUES(%s,%s,%s,%s,%s,%s)",
+            (name, phone, email, address, pw_hash, role)
         )
         uid = cur.lastrowid
         if role == "customer":
             cur.execute("INSERT INTO customer(user_id, age) VALUES(%s, NULL)", (uid,))
+        elif role == "admin":
+            cur.execute("INSERT INTO admins(user_id) VALUES(%s)", (uid,))
         elif role == "pharmacist":
             if not license_no:
                 flash("License is required for pharmacists", "error"); return redirect(url_for("auth.register_page"))
@@ -73,10 +78,11 @@ def register_submit():
         elif role == "doctor":
             if not license_no:
                 flash("License is required for doctors", "error"); return redirect(url_for("auth.register_page"))
-            # doctors requires doctor_name as NOT NULL; use name for doctor_name by default
+            if not education or not speciality:
+                flash("Education and Speciality are required for doctors", "error"); return redirect(url_for("auth.register_page"))
             cur.execute(
                 "INSERT INTO doctors(user_id, doctor_name, license_no, education, contact, specialty) VALUES(%s,%s,%s,%s,%s,%s)",
-                (uid, name, license_no, None, None, None)
+                (uid, name, license_no, education, phone, speciality)
             )
         else:
             flash("Invalid role", "error"); return redirect(url_for("auth.register_page"))

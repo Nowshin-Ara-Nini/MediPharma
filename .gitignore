@@ -1,2 +1,4 @@
 .env
-templates/index.html
+index.html
+login_signup.html
+

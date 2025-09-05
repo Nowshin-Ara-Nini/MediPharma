@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, redirect, url_for
+from flask import Blueprint, render_template, request, session, redirect, url_for, flash
 from db import DB
 
 doctor_bp = Blueprint("doctor", __name__)

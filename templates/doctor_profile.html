@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Doctor Profile</h2>
+  {% if doctor %}
+    <ul>
+      <li><strong>Name:</strong> {{ doctor.doctor_name }}</li>
+      <li><strong>License No:</strong> {{ doctor.license_no }}</li>
+      <li><strong>Education:</strong> {{ doctor.education }}</li>
+      <li><strong>Contact:</strong> {{ doctor.contact }}</li>
+      <li><strong>Specialty:</strong> {{ doctor.specialty }}</li>
+    </ul>
+  {% else %}
+    <p>Doctor profile not found.</p>
+  {% endif %}
+{% endblock %}

@@ -33,3 +33,20 @@ def company_orders():
         cur.execute("SELECT * FROM orders WHERE company_id=%s", (session["uid"],))
         orders = cur.fetchall()
     return render_template("company_orders.html", orders=orders)
+
+# Company Notifications
+@company_bp.get("/company_notifications")
+def notifications():
+    if session.get("role") != "company":
+        return redirect(url_for("auth.login_page"))
+    with DB() as cur:
+        cur.execute("SELECT * FROM notifications WHERE company_id=%s", (session["uid"],))
+        notifications = cur.fetchall()
+    return render_template("company_notifications.html", notifications=notifications)
+
+# Company Refund Policy
+@company_bp.get("/company_refund_policy")
+def refund_policy():
+    if session.get("role") != "company":
+        return redirect(url_for("auth.login_page"))
+    return render_template("refund_policy.html")

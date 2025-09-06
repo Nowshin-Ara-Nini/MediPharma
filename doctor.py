@@ -16,7 +16,7 @@ def doctor_dashboard():
 @doctor_bp.get("/doctor_appointments")
 def doctor_appointments():
     with DB() as cur:
-        cur.execute("SELECT * FROM appointments WHERE user_id=%s", (session["uid"],))
+        cur.execute("SELECT * FROM appointments WHERE doctor_id=%s", (session["uid"],))
         appointments = cur.fetchall()
     return render_template("doctor_appointments.html", appointments=appointments)
 
@@ -24,7 +24,7 @@ def doctor_appointments():
 @doctor_bp.get("/doctor_notes")
 def doctor_notes():
     with DB() as cur:
-        cur.execute("SELECT * FROM notes WHERE user_id=%s", (session["uid"],))
+        cur.execute("SELECT * FROM notes WHERE doctor_id=%s", (session["uid"],))
         notes = cur.fetchall()
     return render_template("doctor_notes.html", notes=notes)
 
@@ -46,6 +46,6 @@ def notifications():
     if session.get("role") != "doctor":
         return redirect(url_for("auth.login_page"))
     with DB() as cur:
-        cur.execute("SELECT * FROM notifications WHERE user_id=%s", (session["uid"],))
+        cur.execute("SELECT * FROM notifications WHERE doctor_id=%s", (session["uid"],))
         notifications = cur.fetchall()
-    return render_template("notifications.html", notifications=notifications)
+    return render_template("doctor_notifications.html", notifications=notifications)

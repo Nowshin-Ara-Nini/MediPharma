@@ -33,3 +33,20 @@ def pharmacist_medicines():
         cur.execute("SELECT * FROM medicines WHERE pharmacist_id=%s", (session["uid"],))
         medicines = cur.fetchall()
     return render_template("pharmacist_medicines.html", medicines=medicines)
+
+# Pharmacist Notifications
+@pharmacist_bp.get("/pharmacist_notifications")
+def notifications():
+    if session.get("role") != "pharmacist":
+        return redirect(url_for("auth.login_page"))
+    with DB() as cur:
+        cur.execute("SELECT * FROM notifications WHERE pharmacist_id=%s", (session["uid"],))
+        notifications = cur.fetchall()
+    return render_template("pharmacist_notifications.html", notifications=notifications)
+
+# Refund Policy
+@pharmacist_bp.get("/pharmacist_refund_policy")
+def refund_policy():
+    if session.get("role") != "pharmacist":
+        return redirect(url_for("auth.login_page"))
+    return render_template("refund_policy.html")

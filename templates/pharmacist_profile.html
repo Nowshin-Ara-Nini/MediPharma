@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Pharmacist Profile</h2>
+  {% if profile %}
+    <ul>
+      <li><strong>Name:</strong> {{ profile.name }}</li>
+      <li><strong>License No:</strong> {{ profile.license_no }}</li>
+      <li><strong>Contact:</strong> {{ profile.contact }}</li>
+      <li><strong>Address:</strong> {{ profile.address }}</li>
+      <!-- Add more fields as needed -->
+    </ul>
+  {% else %}
+    <p>Pharmacist profile not found.</p>
+  {% endif %}
+{% endblock %}

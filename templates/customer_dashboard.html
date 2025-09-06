@@ -1,10 +1,12 @@
 {% extends "base.html" %}
+
 {% block content %}
 <h1>Customer Dashboard</h1>
-<p>My Profile</p>
-<p> My Orders</p>
-<p>My Appointments</p>
-<p>Refund and Return Policy</p>
-<p>My Rating and Reviews</p>
-<p>Notifications</p>
+<p><a href="{{ url_for('customer.customer_profile') }}">My Profile</a></p>
+<p><a href="{{ url_for('customer.customer_orders') }}">My Orders</a></p>
+<p><a href="{{ url_for('customer.my_appointments') }}">My Appointments</a></p>
+<p><a href="{{ url_for('customer.refund_policy') }}">Refund and Return Policy</a></p>
+<p><a href="{{ url_for('customer.customer_reviews') }}">My Rating and Reviews</a></p>
+<p><a href="{{ url_for('customer.notifications') }}">Notifications</a></p>
+
 {% endblock %}

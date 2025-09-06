@@ -35,3 +35,53 @@ nav .btn{background:var(--brand);color:#fff;padding:8px 12px;border-radius:8px}
 .checkout textarea{flex:1;min-width:240px;height:80px;padding:10px;border:1px solid #ddd;border-radius:8px}
 .checkout select{padding:10px;border:1px solid #ddd;border-radius:8px}
 .totals{margin-top:10px}
+
+/* Styles for the Appointments Table */
+.appointments-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.appointments-table th, .appointments-table td {
+  padding: 12px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.appointments-table th {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.appointments-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.appointments-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+.appointments-table td {
+  font-size: 14px;
+}
+
+.appointments-table td, .appointments-table th {
+  border-bottom: 1px solid #ddd;
+}
+
+.appointments-table th {
+  font-weight: bold;
+}
+
+/* Mobile-responsive styles */
+@media screen and (max-width: 768px) {
+  .appointments-table {
+    font-size: 12px;
+  }
+
+  .appointments-table th, .appointments-table td {
+    padding: 8px;
+  }
+}

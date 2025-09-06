@@ -1,12 +1,10 @@
-from flask import Blueprint, render_template, session, redirect, url_for
+from flask import Blueprint, render_template, session, redirect, url_for, flash, request
 from db import DB
 
 customer_bp = Blueprint("customer", __name__)
 
-# Customer Dashboard
 @customer_bp.get("/customer_dashboard")
 def customer_dashboard():
-    # Ensure the current user is a customer
     if session.get("role") != "customer":
         return redirect(url_for("auth.login_page"))
     
@@ -20,35 +18,97 @@ def customer_profile():
         profile = cur.fetchone()
     return render_template("customer_profile.html", profile=profile)
 
-from flask import Blueprint, render_template, request, session, redirect, url_for, flash
-from db import DB
+# Customer Orders
+@customer_bp.get("/customer_orders")
+def customer_orders():
+    with DB() as cur:
+        cur.execute("SELECT * FROM orders WHERE customer_id=%s", (session["uid"],))
+        orders = cur.fetchall()
+    return render_template("customer_orders.html", orders=orders)
 
-customer_bp = Blueprint("customer", __name__)
+# Customer Appointments
+@customer_bp.get("/my_appointments")
+def my_appointments():
+    with DB() as cur:
+        cur.execute("""
+            SELECT a.appointment_id, a.scheduled_at, d.doctor_name
+            FROM appointments a
+            JOIN doctors d ON a.doctor_id = d.user_id
+            WHERE a.customer_id = %s
+            ORDER BY a.scheduled_at DESC
+        """, (session["uid"],))
+        appointments = cur.fetchall()
+    
+    return render_template("customer_appointments.html", appointments=appointments)
 
-# Booking form
-@customer_bp.get("/book_appointment")
-def book_appointment():
-    # Only allow customers
+# Refund and Return Policy
+@customer_bp.get("/refund_policy")
+def refund_policy():
+    return render_template("refund_policy.html")
+
+# Customer Reviews (My Rating and Reviews)
+@customer_bp.get("/customer_reviews")
+def customer_reviews():
+    with DB() as cur:
+        cur.execute("""
+            SELECT f.feedback_id, m.name AS medicine_name, f.rating, f.comments
+            FROM feedbacks f
+            JOIN medicines m ON f.medicine_id = m.medicine_id
+            WHERE f.customer_id = %s
+        """, (session["uid"],))
+        reviews = cur.fetchall()
+    
+    return render_template("customer_reviews.html", reviews=reviews)
+
+# Notifications
+@customer_bp.get("/notifications")
+def notifications():
+    with DB() as cur:
+        # Retrieve all notifications for the customer
+        cur.execute("""
+            SELECT * FROM notifications
+            WHERE user_id = %s
+            ORDER BY created_at DESC
+        """, (session["uid"],))
+        notifications = cur.fetchall()
+    
+    return render_template("notifications.html", notifications=notifications)
+
+
+# List Doctors and Book Appointment
+@customer_bp.get("/list_doctors")
+def list_doctors():
     if session.get("role") != "customer":
         return redirect(url_for("auth.login_page"))
-    with DB() as cur:
-        cur.execute("SELECT user_id, doctor_name, specialty FROM doctors")
-        doctors = cur.fetchall()
-    return render_template("book_appointment.html", doctors=doctors)
 
-# Submit booking
+    # Fetch all doctors from the database
+    with DB() as cur:
+        cur.execute("SELECT * FROM doctors")
+        doctors = cur.fetchall()
+
+    return render_template("list_doctors.html", doctors=doctors)
+
+# Book Appointment with Doctor
 @customer_bp.post("/book_appointment")
-def book_appointment_submit():
+def book_appointment():
+    if session.get("role") != "customer":
+        return redirect(url_for("auth.login_page"))
+
     doctor_id = request.form.get("doctor_id")
     scheduled_at = request.form.get("scheduled_at")
-    if not (doctor_id and scheduled_at):
+    if not doctor_id or not scheduled_at:
         flash("Doctor and time are required", "error")
-        return redirect(url_for("customer.book_appointment"))
+        return redirect(url_for("customer.list_doctors"))
 
     with DB() as cur:
+        # Insert a new appointment into the appointments table
         cur.execute("""
             INSERT INTO appointments (customer_id, doctor_id, scheduled_at)
             VALUES (%s, %s, %s)
         """, (session["uid"], doctor_id, scheduled_at))
+
     flash("Appointment booked successfully", "success")
-    return redirect(url_for("customer.customer_dashboard"))
+    return redirect(url_for("customer.list_doctors"))
+
+# Cancel Appointment
+# @customer_bp.post("/cancel_appointment/<int:appointment_id>")

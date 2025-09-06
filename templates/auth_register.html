@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
   <script>
     let agreementAccepted = false;
+    let agreementTriggered = false;
 
     function toggleLicenseField(){
       const role = document.querySelector('select[name="role"]').value;
@@ -17,8 +18,11 @@
       agreementAccepted = true;
       document.getElementById('agreement_modal').style.display = 'none';
       document.getElementById('cannot_create_msg').style.display = 'none';
-      // Submit the form after agreement
-      document.getElementById('register_form').submit();
+      // Trigger submit only if popup was triggered by submit
+      if (agreementTriggered) {
+        agreementTriggered = false;
+        document.getElementById('register_form').submit();
+      }
     }
 
     function agreeNo() {
@@ -29,8 +33,19 @@
 
     function checkAgreement(event) {
       const role = document.querySelector('select[name="role"]').value;
+      // Doctor fields validation
+      if (role === 'doctor') {
+        const education = document.querySelector('input[name="education"]').value.trim();
+        const speciality = document.querySelector('input[name="speciality"]').value.trim();
+        if (!education || !speciality) {
+          event.preventDefault();
+          alert("Education and Speciality are required for doctors.");
+          return;
+        }
+      }
       if ((role === 'pharmacist' || role === 'company') && !agreementAccepted) {
         event.preventDefault();
+        agreementTriggered = true;
         document.getElementById('agreement_modal').style.display = 'block';
         document.getElementById('cannot_create_msg').style.display = 'none';
       }
@@ -88,8 +103,8 @@
       </div>
       <div class="input-group" id="license_group" style="display:none"><label>License Number</label><input name="license_no" type="text"></div>
       <div id="doctor_fields">
-        <div class="input-group"><label>Education</label><input type="text" name="education" required></div>
-        <div class="input-group"><label>Speciality</label><input type="text" name="speciality" required></div>
+        <div class="input-group"><label>Education</label><input type="text" name="education"></div>
+        <div class="input-group"><label>Speciality</label><input type="text" name="speciality"></div>
       </div>
       <div class="input-group"><label>Password</label><input type="password" name="password" required></div>
       <button type="submit">Create Account</button>

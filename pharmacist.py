@@ -3,16 +3,30 @@ from db import DB
 
 pharmacist_bp = Blueprint("pharmacist", __name__)
 
-# Pharmacist Dashboard
 @pharmacist_bp.get("/pharmacist_dashboard")
 def pharmacist_dashboard():
-    # Ensure the current user is a pharmacist
     if session.get("role") != "pharmacist":
         return redirect(url_for("auth.login_page"))
     
     return render_template("pharmacist_dashboard.html")
 
-# Pharmacist Medicines (viewing medicines they are selling)
+# Pharmacist Profile
+@pharmacist_bp.get("/pharmacist_profile")
+def pharmacist_profile():
+    with DB() as cur:
+        cur.execute("SELECT * FROM pharmacists WHERE user_id=%s", (session["uid"],))
+        profile = cur.fetchone()
+    return render_template("pharmacist_profile.html", profile=profile)
+
+# Pharmacist Orders
+@pharmacist_bp.get("/pharmacist_orders")
+def pharmacist_orders():
+    with DB() as cur:
+        cur.execute("SELECT * FROM orders WHERE pharmacist_id=%s", (session["uid"],))
+        orders = cur.fetchall()
+    return render_template("pharmacist_orders.html", orders=orders)
+
+# Pharmacist Medicines
 @pharmacist_bp.get("/pharmacist_medicines")
 def pharmacist_medicines():
     with DB() as cur:

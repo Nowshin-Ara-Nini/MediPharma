@@ -1,41 +1,41 @@
-{% extends 'base.html' %}
+
+{% extends "base.html" %}
+
 {% block content %}
-<h2>Your Cart</h2>
-{% if not cart %}
-  <p>Cart is empty.</p>
-{% else %}
-<table class="table">
-  <thead><tr><th>Item</th><th>Price</th><th>Qty</th><th>Subtotal</th><th></th></tr></thead>
-  <tbody>
-  {% for it in items %}
-    <tr>
-      <td>{{ it.name }}</td>
-      <td>৳{{ '%.2f'|format(it.price) }}</td>
-      <td>
-        <form method="post" action="{{ url_for('shop.cart_update') }}" class="inline">
-          <input type="hidden" name="medicine_id" value="{{ it.medicine_id }}">
-          <input type="number" name="qty" value="{{ it.quantity }}" min="0">
-          <button class="btn small">Update</button>
-        </form>
-      </td>
-      <td>৳{{ '%.2f'|format(it.price*it.quantity) }}</td>
-      <td></td>
-    </tr>
-  {% endfor %}
-  </tbody>
-</table>
-<div class="totals">Total: <strong>৳{{ '%.2f'|format(cart.total_amount) }}</strong></div>
-<form method="post" action="{{ url_for('shop.checkout_submit') }}" class="checkout">
-  <textarea name="address" placeholder="Delivery address" required></textarea>
-  <select name="method" required>
-    <option value="">Payment Method</option>
-    <option value="bkash">bKash</option>
-    <option value="nagad">Nagad</option>
-    <option value="card">Card</option>
-    <option value="wallet">Wallet</option>
-    <option value="cod">Cash on Delivery</option>
-  </select>
-  <button class="btn">Place Order</button>
-</form>
-{% endif %}
+  <div class="page">
+    <section class="hero">
+      <h1>Your Cart</h1>
+      <p>Review the medicines in your cart.</p>
+    </section>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in cart_items %}
+          <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.description }}</td>
+            <td>৳{{ '%.2f'|format(item.price) }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>৳{{ '%.2f'|format(item.price * item.quantity) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cart-total">
+      <h3>Total Amount: ৳{{ total_amount }}</h3>
+      <button class="btn">Proceed to Checkout</button>
+    </div>
+  </div>
 {% endblock %}

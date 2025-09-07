@@ -112,3 +112,76 @@ def book_appointment():
 
 # Cancel Appointment
 # @customer_bp.post("/cancel_appointment/<int:appointment_id>")
+
+@customer_bp.route("/add_to_cart", methods=["POST"])
+def add_to_cart():
+    if session.get("role") != "customer":
+        return redirect(url_for("auth.login_page"))
+
+    medicine_id = request.form.get("medicine_id", type=int)
+    quantity = request.form.get("quantity", type=int)
+
+    with DB() as cur:
+        # Check if the customer already has a cart
+        cur.execute("""
+            SELECT cart_id FROM carts WHERE user_id = %s
+        """, (session["uid"],))
+        cart = cur.fetchone()
+
+        if not cart:
+            # If no cart exists, create a new cart for the customer
+            cur.execute("""
+                INSERT INTO carts (user_id, total_amount) 
+                VALUES (%s, %s)
+            """, (session["uid"], 0.00))
+            cart_id = cur.lastrowid
+        else:
+            cart_id = cart['cart_id']
+
+        # Check if the item already exists in the cart
+        cur.execute("""
+            SELECT * FROM cart_items WHERE cart_id = %s AND medicine_id = %s
+        """, (cart_id, medicine_id))
+        existing_item = cur.fetchone()
+
+        if existing_item:
+            # If the item exists, update the quantity
+            new_quantity = existing_item['quantity'] + quantity
+            cur.execute("""
+                UPDATE cart_items 
+                SET quantity = %s
+                WHERE cart_id = %s AND medicine_id = %s
+            """, (new_quantity, cart_id, medicine_id))
+        else:
+            # If the item doesn't exist, insert it into the cart
+            cur.execute("""
+                INSERT INTO cart_items (cart_id, medicine_id, quantity)
+                VALUES (%s, %s, %s)
+            """, (cart_id, medicine_id, quantity))
+
+        # Update the total amount in the cart
+        cur.execute("""
+            UPDATE carts 
+            SET total_amount = (
+                SELECT SUM(m.price * ci.quantity)
+                FROM cart_items ci
+                JOIN medicines m ON m.medicine_id = ci.medicine_id
+                WHERE ci.cart_id = %s
+            )
+            WHERE cart_id = %s
+        """, (cart_id, cart_id))
+
+    flash("Added to cart", "success")
+    return redirect(url_for("shop.cart_page"))
+
+@customer_bp.route("/medicines_catalog")
+def medicines_catalog():
+    with DB() as cur:
+        cur.execute("""
+            SELECT m.medicine_id, m.name, m.description, m.price
+            FROM medicines_catalog mc
+            JOIN medicines m ON m.medicine_id = mc.medicine_id
+        """)
+        medicines = cur.fetchall()
+
+    return render_template("medicines_catalog.html", medicines=medicines)

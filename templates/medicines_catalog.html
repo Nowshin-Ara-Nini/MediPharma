@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page">
+  <section class="hero">
+    <h1>Available Medicines</h1>
+    <p>Browse medicines available for purchase.</p>
+  </section>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Price</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for medicine in medicines %}
+        <tr>
+          <td>{{ medicine.name }}</td>
+          <td>{{ medicine.description }}</td>
+          <td>৳{{ '%.2f'|format(medicine.price) }}</td>
+          <td>
+            <form method="post" action="{{ url_for('customer.add_to_cart') }}">
+              <input type="hidden" name="medicine_id" value="{{ medicine.medicine_id }}">
+              <input type="hidden" name="quantity" value="1">
+              <button type="submit" class="btn">Add to Cart</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

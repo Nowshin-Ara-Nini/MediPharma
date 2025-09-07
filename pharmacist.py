@@ -131,3 +131,28 @@ def request_stock():
 
     flash("Your stock request is successful", "success")
     return redirect(url_for("pharmacist.pharmacist_medicines"))
+
+@pharmacist_bp.route("/upload_medicine_to_catalog", methods=["POST"])
+def upload_medicine_to_catalog():
+    if session.get("role") != "pharmacist":
+        return redirect(url_for("auth.login_page"))
+
+    medicine_id = request.form.get("medicine_id", type=int)
+    company_id = request.form.get("company_id", type=int)
+
+    with DB() as cur:
+        # Check if the medicine already exists in the catalog
+        cur.execute("""
+            SELECT 1 FROM medicines_catalog WHERE medicine_id = %s
+        """, (medicine_id,))
+        if cur.fetchone():
+            flash("This medicine is already available in the catalog.", "warning")
+        else:
+            # Insert into the medicines catalog for customers
+            cur.execute("""
+                INSERT INTO medicines_catalog (medicine_id, company_id)
+                VALUES (%s, %s)
+            """, (medicine_id, company_id))
+            flash("Medicine added to the catalog successfully.", "success")
+    
+    return redirect(url_for("pharmacist.pharmacist_medicines"))

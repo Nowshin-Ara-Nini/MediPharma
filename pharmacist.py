@@ -7,10 +7,8 @@ pharmacist_bp = Blueprint("pharmacist", __name__)
 def pharmacist_dashboard():
     if session.get("role") != "pharmacist":
         return redirect(url_for("auth.login_page"))
-    
     return render_template("pharmacist_dashboard.html")
 
-# Pharmacist Profile
 @pharmacist_bp.get("/pharmacist_profile")
 def pharmacist_profile():
     with DB() as cur:
@@ -18,7 +16,21 @@ def pharmacist_profile():
         profile = cur.fetchone()
     return render_template("pharmacist_profile.html", profile=profile)
 
-# Pharmacist Orders
+@pharmacist_bp.get("/pharmacist_medicines")
+def pharmacist_medicines():
+    with DB() as cur:
+        cur.execute("""
+            SELECT m.*, ii.stock_quantity
+            FROM medicines m
+            JOIN inventory_items ii ON ii.medicine_id = m.medicine_id
+            JOIN inventories i ON i.inventory_id = ii.inventory_id
+            WHERE i.pharmacist_id = %s
+        """, (session["uid"],))  # session["uid"] is the pharmacist's ID
+        
+        medicines = cur.fetchall()
+    
+    return render_template("pharmacist_medicines.html", medicines=medicines)
+
 @pharmacist_bp.get("/pharmacist_orders")
 def pharmacist_orders():
     with DB() as cur:
@@ -26,27 +38,15 @@ def pharmacist_orders():
         orders = cur.fetchall()
     return render_template("pharmacist_orders.html", orders=orders)
 
-# Pharmacist Medicines
-@pharmacist_bp.get("/pharmacist_medicines")
-def pharmacist_medicines():
-    with DB() as cur:
-        cur.execute("SELECT * FROM medicines WHERE pharmacist_id=%s", (session["uid"],))
-        medicines = cur.fetchall()
-    return render_template("pharmacist_medicines.html", medicines=medicines)
-
-# Pharmacist Notifications
-@pharmacist_bp.get("/pharmacist_notifications")
-def notifications():
-    if session.get("role") != "pharmacist":
-        return redirect(url_for("auth.login_page"))
+@pharmacist_bp.get("/pharmacist_notifications", endpoint="notifications")
+def pharmacist_notifications():
     with DB() as cur:
         cur.execute("SELECT * FROM notifications WHERE pharmacist_id=%s", (session["uid"],))
         notifications = cur.fetchall()
-    return render_template("pharmacist_notifications.html", notifications=notifications)
+    return render_template("notifications.html", notifications=notifications)
 
-# Refund Policy
-@pharmacist_bp.get("/pharmacist_refund_policy")
-def refund_policy():
+@pharmacist_bp.get("/pharmacist_refund_policy", endpoint="refund_policy")
+def pharmacist_refund_policy():
     if session.get("role") != "pharmacist":
         return redirect(url_for("auth.login_page"))
     return render_template("refund_policy.html")

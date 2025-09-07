@@ -1,23 +1,25 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Medicines I'm Selling</h1>
+<h1>Medicines Available from Companies</h1>
+
 <table>
   <thead>
     <tr>
       <th>Name</th>
+      <th>Description</th>
       <th>Price</th>
-      <th>Stock</th>
     </tr>
   </thead>
   <tbody>
     {% for medicine in medicines %}
     <tr>
       <td>{{ medicine.name }}</td>
+      <td>{{ medicine.description }}</td>
       <td>৳{{ '%.2f'|format(medicine.price) }}</td>
-      <td>{{ medicine.stock }}</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+
 {% endblock %}

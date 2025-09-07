@@ -1,27 +1,27 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>My Rating and Reviews</h1>
-{% if reviews %}
-  <table>
-    <thead>
-      <tr>
-        <th>Medicine Name</th>
-        <th>Rating</th>
-        <th>Comments</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for review in reviews %}
-      <tr>
-        <td>{{ review.medicine_name }}</td>
-        <td>{{ review.rating }}</td>
-        <td>{{ review.comments or 'No comments' }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-{% else %}
-  <p>You haven't left any reviews yet.</p>
-{% endif %}
+  <h1>My Rating and Reviews</h1>
+  {% if reviews %}
+    <table>
+      <thead>
+        <tr>
+          <th>Medicine Name</th>
+          <th>Rating</th>
+          <th>Comments</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for review in reviews %}
+          <tr>
+            <td>{{ review.medicine_name }}</td>
+            <td>{{ review.rating }}</td>
+            <td>{{ review.comments or 'No comments' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>You haven't left any reviews yet.</p>
+  {% endif %}
 {% endblock %}

@@ -19,14 +19,23 @@ def medicines():
 
 @shop_bp.post("/cart/add")
 def cart_add():
-    uid = current_user_id()
-    if not uid:
-        return jsonify({"ok": False, "msg": "Login required"}), 401
-
-    med_id = int(request.form["medicine_id"])
-    qty = max(1, int(request.form.get("qty", 1)))
+    # Check if user is logged in
+    if 'uid' not in session or session.get('role') != 'customer':
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({"ok": False, "msg": "Login required"}), 401
+        flash("Login required", "error")
+        return redirect(url_for("auth.login_page"))
+    
+    uid = session["uid"]
+    
+    try:
+        med_id = int(request.form["medicine_id"])
+        qty = max(1, int(request.form.get("qty", 1)))
+    except (ValueError, KeyError):
+        return jsonify({"ok": False, "msg": "Invalid input"}), 400
 
     with DB() as cur:
+        # Get or create cart
         cur.execute("SELECT cart_id FROM carts WHERE user_id=%s", (uid,))
         row = cur.fetchone()
         if not row:
@@ -35,6 +44,7 @@ def cart_add():
         else:
             cart_id = row["cart_id"]
 
+        # Check if item already exists in cart
         cur.execute("SELECT quantity FROM cart_items WHERE cart_id=%s AND medicine_id=%s", (cart_id, med_id))
         ex = cur.fetchone()
         if ex:
@@ -42,6 +52,7 @@ def cart_add():
         else:
             cur.execute("INSERT INTO cart_items(cart_id, medicine_id, quantity) VALUES(%s,%s,%s)", (cart_id, med_id, qty))
 
+        # Update cart total
         cur.execute("""
             SELECT SUM(ci.quantity * m.price) AS total
             FROM cart_items ci
@@ -51,6 +62,7 @@ def cart_add():
         total = cur.fetchone()["total"] or 0
         cur.execute("UPDATE carts SET total_amount=%s WHERE cart_id=%s", (total, cart_id))
 
+    # Always return JSON for AJAX requests
     return jsonify({"ok": True, "msg": "Added to cart"})
 
 @shop_bp.get("/cart")
@@ -67,7 +79,7 @@ def cart_page():
 
         if not cart:
             flash("Your cart is empty.", "warning")
-            return redirect(url_for("customer.medicines"))
+            return redirect(url_for("customer.medicines_catalog"))
 
         cart_id = cart['cart_id']
 

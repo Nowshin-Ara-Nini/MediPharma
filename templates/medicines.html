@@ -1,39 +1,190 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <div class="page">
-    <section class="hero">
-      <h1>Available Medicines</h1>
-      <p>Browse medicines available for purchase.</p>
-    </section>
+  <div class="medicines-container">
+    <div class="medicines-list">
+      {% for medicine in medicines %}
+        <div class="medicine-item">
+          <h3>{{ medicine.name }}</h3>
+          <p>{{ medicine.description }}</p>
+          <p class="price"><strong>Price: ৳{{ '%.2f'|format(medicine.price) }}</strong></p>
+          <form class="add-to-cart-form" data-medicine-id="{{ medicine.medicine_id }}">
+            <input type="number" name="qty" value="1" min="1" max="10" class="quantity-input">
+            <button type="submit" class="btn add-to-cart-btn">Add to Cart</button>
+          </form>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Price</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for medicine in medicines %}
-          <tr>
-            <td>{{ medicine.name }}</td>
-            <td>{{ medicine.description }}</td>
-            <td>৳{{ '%.2f'|format(medicine.price) }}</td>
-            <td>
-              <form method="post" action="{{ url_for('customer.add_to_cart') }}">
-                <input type="hidden" name="medicine_id" value="{{ medicine.medicine_id }}">
-                <input type="hidden" name="quantity" value="1">
-                <button type="submit" class="btn">Add to Cart</button>
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          <!-- Feedback Button that triggers the page redirection -->
+          <a href="{{ url_for('feedback', medicine_id=medicine.medicine_id) }}" class="btn feedback-btn">Leave Feedback</a>
+
+        </div>
+      {% endfor %}
     </div>
   </div>
+{% endblock %}
+
+{% block styles %}
+<style>
+  /* Main container with white background */
+  .medicines-container {
+    background-color: #ffffff;
+    min-height: calc(100vh - 120px);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+  }
+
+  .medicines-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .medicine-item {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+  }
+
+  .medicine-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(52, 191, 163, 0.15);
+    border-color: #34bfa3;
+  }
+
+  .medicine-item h3 {
+    color: #34bfa3;
+    margin: 0 0 12px 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+  }
+
+  .medicine-item p {
+    color: #4b5563;
+    margin: 8px 0;
+    line-height: 1.5;
+    font-size: 14px;
+  }
+
+  .medicine-item .price {
+    color: #059669;
+    font-weight: 600;
+    font-size: 16px;
+    margin: 12px 0;
+  }
+
+  /* Popup Feedback Form Styling */
+  .popup-feedback {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    border: 2px solid #ccc;
+    padding: 20px;
+    width: 300px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+    display: none; /* Initially hidden */
+    z-index: 1000;
+  }
+
+  .popup-feedback textarea {
+    width: 100%;
+    height: 100px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+
+  .popup-feedback button {
+    background-color: #34bfa3;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+  }
+
+  .popup-feedback button:hover {
+    background-color: #2b8a73;
+  }
+
+  .close-popup {
+    background-color: #f44336;
+    color: white;
+    padding: 8px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+  }
+
+  .close-popup:hover {
+    background-color: #d32f2f;
+  }
+
+  /* Popup message styling */
+  .popup-message {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #34bfa3;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 12px;
+    display: none;
+    z-index: 1000;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(52, 191, 163, 0.4);
+    backdrop-filter: blur(10px);
+    animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .popup-message.error {
+    background-color: #ef4444;
+    box-shadow: 0 8px 32px rgba(239, 68, 68, 0.4);
+  }
+
+  .popup-message.show {
+    display: block;
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translate(-50%, 100%);
+      opacity: 0;
+      scale: 0.8;
+    }
+    to {
+      transform: translate(-50%, 0);
+      opacity: 1;
+      scale: 1;
+    }
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .medicines-container {
+      padding: 20px;
+      margin: 10px;
+    }
+
+    .medicines-list {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .medicine-item {
+      padding: 20px;
+    }
+  }
+</style>
 {% endblock %}

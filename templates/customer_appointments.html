@@ -4,6 +4,42 @@
 <h1>My Appointments</h1>
 
 {% if appointments %}
+<style>
+  .appointments-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+
+  .appointments-table th, .appointments-table td {
+    padding: 12px 20px;
+    text-align: left;
+    border: 1px solid #6f9aab;
+  }
+
+  .appointments-table th {
+    background-color: #75acb6;
+    color: white;
+  }
+
+  .appointments-table td {
+    background-color: #f9f9f9;
+  }
+
+  .appointments-table tr:nth-child(even) {
+    background-color: #f1f1f1;
+  }
+
+  .appointments-table tr:hover {
+    background-color: #e0f7fa;
+  }
+
+  .appointments-table p {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #333;
+  }
+</style>
   <!-- Slick Table Design for Appointments -->
   <table class="appointments-table">
     <thead>
@@ -17,7 +53,7 @@
       {% for appointment in appointments %}
         <tr>
           <td>{{ appointment.appointment_id }}</td>
-          <td>{{ appointment.doctor_name }}</td> <!-- Displaying Doctor's Name -->
+          <td>{{ appointment.doctor_name }}</td>
           <td>{{ appointment.scheduled_at }}</td>
         </tr>
       {% endfor %}
@@ -28,5 +64,8 @@
 {% endif %}
 
 {% endblock %}
+
+
+
 
 

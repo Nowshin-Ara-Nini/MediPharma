@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  :root{ --panel:#0b1222; --muted:#94a3b8; --text:#e5e7eb; --bd:rgba(148,163,184,.18) }
+  .page{max-width:1100px;margin:0 auto;padding:24px}
+  h1{margin:0 0 12px}
+  .sub{color:var(--muted);margin-bottom:16px}
+  .wrap{background:var(--panel);border:1px solid var(--bd);border-radius:16px;overflow:auto}
+  table{width:100%;border-collapse:separate;border-spacing:0;min-width:860px}
+  thead th{position:sticky;top:0;background:#0d152a;color:var(--muted);font-weight:600;font-size:13px;
+    text-align:left;padding:12px 14px;border-bottom:1px solid var(--bd)}
+  tbody td{padding:12px 14px;border-bottom:1px solid rgba(148,163,184,.10);color:var(--text)}
+  tbody tr:hover{background:rgba(124,58,237,.06)}
+  .pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,.08)}
+  .pending{background:rgba(234,179,8,.15);color:#fde68a;border-color:rgba(234,179,8,.35)}
+  .approved{background:rgba(22,163,74,.15);color:#86efac;border-color:rgba(22,163,74,.35)}
+  .rejected{background:rgba(239,68,68,.15);color:#fecaca;border-color:rgba(239,68,68,.35)}
+  .fulfilled{background:rgba(59,130,246,.15);color:#bfdbfe;border-color:rgba(59,130,246,.35)}
+</style>
+
+<div class="page">
+  <h1>My Orders</h1>
+  <p class="sub">Stock requests placed by pharmacists for your medicines.</p>
+
+  <div class="wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Pharmacist</th>
+          <th>Medicine</th>
+          <th>Quantity</th>
+          <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in orders %}
+      <tr>
+        <td>{{ r.pharmacist_name }}</td>
+        <td>{{ r.medicine_name or ('#' ~ r.medicine_id) }}</td>
+        <td>{{ r.quantity }}</td>
+        <td><span class="pill {{ r.status }}">{{ r.status|capitalize }}</span></td>
+        <td>
+          {% if r.status == 'pending' %}
+            <form method="post" action="{{ url_for('company.fulfill_order') }}">
+              <input type="hidden" name="pharmacist_id" value="{{ r.pharmacist_id }}">
+              <input type="hidden" name="medicine_id"   value="{{ r.medicine_id }}">
+              <input type="hidden" name="quantity"      value="{{ r.quantity }}">
+              <button class="btn" type="submit">Fulfill</button>
+            </form>
+          {% else %}
+            —
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:24px">No requests yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

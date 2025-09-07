@@ -16,10 +16,10 @@
       <nav>
         <a href="{{ url_for('shop.medicines') }}">💉Medicines</a>
         {% if session.get('uid') %}
-          <a href="{{ url_for('shop.cart_page') }}">🛒 Cart</a>
           {% if session.get('role') == 'customer' %}
             <a href="{{ url_for('shop.wishlist_page') }}">❤️ Wishlist</a>
             <a href="{{ url_for('customer.list_doctors') }}">👨‍⚕️ Book an Appointment</a>
+            <a href="{{ url_for('shop.cart_page') }}">🛒 Cart</a>
           {% endif %}
           {% if session.get('role') == 'pharmacist' %}
             <a href="{{ url_for('pharmacist.pharmacist_medicines') }}">🗂 Inventory</a>
@@ -55,3 +55,24 @@
 </body>
 </html>
 </html>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div id="toast-stack" aria-live="polite" aria-atomic="true" style="position:fixed;top:16px;right:16px;z-index:9999;">
+    {% for category, msg in messages %}
+      <div class="toast {{ category }}" style="
+        background:#0b1222;border:1px solid rgba(148,163,184,.18);color:#e5e7eb;
+        border-radius:12px;padding:12px 14px;margin-bottom:10px;min-width:260px;
+        box-shadow:0 8px 24px rgba(124,58,237,.15)">
+        {{ msg }}
+      </div>
+    {% endfor %}
+  </div>
+  <script>
+    // auto-dismiss after 3 seconds
+    setTimeout(() => {
+      document.querySelectorAll('#toast-stack .toast').forEach(t => t.remove());
+    }, 3000);
+  </script>
+  {% endif %}
+{% endwith %}

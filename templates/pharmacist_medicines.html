@@ -1,25 +1,141 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Medicines Available from Companies</h1>
+<style>
+  :root{
+    --bg:#0f172a; --panel:#0b1222; --muted:#94a3b8; --text:#e5e7eb;
+    --accent:#7c3aed; --accent2:#22d3ee; --ok:#16a34a; --bad:#ef4444;
+    --bd: rgba(148,163,184,.18); --bd2: rgba(148,163,184,.10); --radius:16px;
+  }
+  .page{max-width:1100px;margin:0 auto;padding:24px}
+  .hero{
+    background: radial-gradient(900px 250px at -10% -40%, var(--accent2) 0%, transparent 55%),
+                radial-gradient(900px 250px at 110% -40%, var(--accent) 0%, transparent 55%),
+                linear-gradient(180deg, #0b1022 0%, #0d1228 100%);
+    color:var(--text); border-radius:calc(var(--radius)*1.25);
+    padding:24px 26px; box-shadow:0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  .hero h1{margin:0;font-size:28px;letter-spacing:.2px}
+  .hero p{margin:6px 0 0;color:var(--muted)}
+  .toolbar{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:16px 2px}
+  .search{flex:1;position:relative}
+  .search input{
+    width:100%; background:var(--panel); color:var(--text); border:1px solid var(--bd);
+    border-radius:12px; padding:11px 40px 11px 40px; outline:none;
+  }
+  .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.6}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;
+    color:var(--text); text-decoration:none; background:linear-gradient(90deg,var(--accent),var(--accent2));
+    border:1px solid transparent; box-shadow:0 8px 24px rgba(124,58,237,.15); cursor:pointer
+  }
 
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Description</th>
-      <th>Price</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for medicine in medicines %}
-    <tr>
-      <td>{{ medicine.name }}</td>
-      <td>{{ medicine.description }}</td>
-      <td>৳{{ '%.2f'|format(medicine.price) }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+  .table-wrap{background:var(--panel);border:1px solid var(--bd);border-radius:16px;overflow:auto}
+  table{width:100%;border-collapse:separate;border-spacing:0;min-width:880px}
+  thead th{
+    position:sticky;top:0;z-index:1;background:#0d152a;color:var(--muted);font-weight:600;font-size:13px;
+    text-align:left;padding:12px 14px;border-bottom:1px solid var(--bd);
+  }
+  tbody td{padding:14px;border-bottom:1px solid var(--bd2);color:var(--text);vertical-align:middle}
+  tbody tr:hover{background:rgba(124,58,237,.06)}
+  .name{font-weight:600}
+  .muted{color:var(--muted);font-size:13px}
+  .price{white-space:nowrap}
+  .pill{
+    display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,.08)
+  }
+  .pill.ok{background:rgba(22,163,74,.15);color:#86efac;border-color:rgba(22,163,74,.35)}
+  .pill.bad{background:rgba(239,68,68,.15);color:#fecaca;border-color:rgba(239,68,68,.35)}
+  .empty{color:var(--muted);text-align:center;padding:28px}
+  .inline-form{display:flex;gap:8px;align-items:center}
+  .hint{color:var(--muted);font-size:12px;margin-top:6px}
+  @media (max-width:860px){ .toolbar{flex-direction:column;align-items:stretch} }
+</style>
 
+<div class="page">
+  <section class="hero">
+    <h1>Medicines Available from Companies</h1>
+    <p>Request stock from listed companies to add to your inventory.</p>
+  </section>
+
+  <div class="toolbar">
+    <div class="search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M21 21l-4.3-4.3m1.3-4.7a7 7 0 11-14 0 7 7 0 0114 0z"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <input id="search" type="search" placeholder="Search by name or description…">
+    </div>
+    <!-- removed the single top Add button -->
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="min-width:220px">Name</th>
+          <th>Description</th>
+          <th>Production</th>
+          <th>Expiry</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Status</th>
+          <th style="min-width:180px">Action</th>
+        </tr>
+      </thead>
+      <tbody id="inv-tbody">
+        {% for medicine in medicines %}
+        <tr data-search="{{ (medicine.name ~ ' ' ~ medicine.description)|lower }}">
+          <td class="name">{{ medicine.name }}</td>
+          <td class="muted">{{ medicine.description }}</td>
+          <td class="muted">{{ medicine.production_date }}</td>
+          <td class="muted">{{ medicine.expiry_date }}</td>
+          <td class="price">৳{{ '%.2f'|format(medicine.price) }}</td>
+          <td>{{ medicine.stock }}</td>
+          <td>
+            {% if medicine.stock|int > 0 %}
+              <span class="pill ok">In stock</span>
+            {% else %}
+              <span class="pill bad">Out of stock</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if medicine.stock|int > 0 %}
+              <form class="inline-form" method="post" action="{{ url_for('pharmacist.request_stock') }}">
+                <input type="hidden" name="company_id"  value="{{ medicine.company_id }}">
+                <input type="hidden" name="medicine_id" value="{{ medicine.medicine_id }}">
+                <!-- default to minimum 50 as specified -->
+                <input type="hidden" name="quantity"    value="50">
+                <button type="submit" class="btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                  Request Stock
+                </button>
+              </form>
+              <div class="hint">Requests at least 50 units.</div>
+            {% else %}
+              <span class="muted">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td class="empty" colspan="8">No medicines available right now.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  (function(){
+    const input = document.getElementById('search');
+    const rows = Array.from(document.querySelectorAll('#inv-tbody tr'));
+    function filter(){
+      const q = (input.value || '').trim().toLowerCase();
+      rows.forEach(el => el.style.display = (el.dataset.search || '').includes(q) ? '' : 'none');
+    }
+    input && input.addEventListener('input', filter);
+  })();
+</script>
 {% endblock %}

@@ -102,13 +102,34 @@ def add_medicine():
     flash("Medicine added to company inventory.", "success")
     return redirect(url_for("company.company_medicines"))
 
+# company.py
+from flask import Blueprint, render_template, session, redirect, url_for, request, flash
+from db import DB
+
 @company_bp.get("/company_orders")
 def company_orders():
-    with DB() as cur:
-        cur.execute("SELECT * FROM orders WHERE company_id=%s", (session["uid"],))
-        orders = cur.fetchall()
-    return render_template("company_orders.html", orders=orders)
+    if session.get("role") != "company":
+        return redirect(url_for("auth.login_page"))
 
+    with DB() as cur:
+        cur.execute("""
+            SELECT
+                sr.pharmacist_id,
+                up.name AS pharmacist_name,
+                sr.medicine_id,
+                m.name  AS medicine_name,
+                sr.quantity,
+                sr.status
+            FROM stock_requests sr
+            JOIN users up         ON up.user_id = sr.pharmacist_id
+            LEFT JOIN medicines m ON m.medicine_id = sr.medicine_id
+            WHERE sr.company_id = %s
+            ORDER BY FIELD(sr.status,'pending','approved','rejected','fulfilled'),
+                     m.name, up.name
+        """, (session["uid"],))
+        orders = cur.fetchall()
+
+    return render_template("company_orders.html", orders=orders)
 @company_bp.get("/company_notifications", endpoint="notifications")
 def company_notifications():
     with DB() as cur:
@@ -121,3 +142,52 @@ def company_refund_policy():
     if session.get("role") != "company":
         return redirect(url_for("auth.login_page"))
     return render_template("refund_policy.html")
+
+@company_bp.post("/company_orders/fulfill")
+def fulfill_order():
+    if session.get("role") != "company":
+        return redirect(url_for("auth.login_page"))
+
+    company_id    = session["uid"]
+    pharmacist_id = request.form.get("pharmacist_id", type=int)
+    medicine_id   = request.form.get("medicine_id", type=int)
+    quantity      = request.form.get("quantity", type=int)
+
+    if not (pharmacist_id and medicine_id and quantity):
+        flash("Missing data to fulfill.", "error")
+        return redirect(url_for("company.company_orders"))
+
+    with DB() as cur:
+        # Ensure a pharmacist-specific inventory exists for this company
+        cur.execute("""
+            SELECT inventory_id
+            FROM inventories
+            WHERE company_id=%s AND pharmacist_id=%s
+        """, (company_id, pharmacist_id))
+        row = cur.fetchone()
+        if row:
+            inv_ph_id = row["inventory_id"]
+        else:
+            cur.execute("""
+                INSERT INTO inventories(company_id, pharmacist_id)
+                VALUES(%s, %s)
+            """, (company_id, pharmacist_id))
+            inv_ph_id = cur.lastrowid
+
+        # Upsert the quantity INTO the pharmacist's inventory
+        cur.execute("""
+            INSERT INTO inventory_items(inventory_id, medicine_id, stock_quantity)
+            VALUES(%s, %s, %s)
+            ON DUPLICATE KEY UPDATE stock_quantity = stock_quantity + VALUES(stock_quantity)
+        """, (inv_ph_id, medicine_id, quantity))
+
+        # Mark one matching pending request as fulfilled
+        cur.execute("""
+            UPDATE stock_requests
+            SET status='fulfilled'
+            WHERE company_id=%s AND pharmacist_id=%s AND medicine_id=%s AND status='pending'
+            LIMIT 1
+        """, (company_id, pharmacist_id, medicine_id))
+
+    flash("Request fulfilled and stock stored in pharmacist inventory.", "success")
+    return redirect(url_for("company.company_orders"))

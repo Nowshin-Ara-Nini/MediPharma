@@ -24,7 +24,7 @@
             <td>{{ medicine.description }}</td>
             <td>৳{{ '%.2f'|format(medicine.price) }}</td>
             <td>
-              <form method="post" action="{{ url_for('customer.add_to_cart') }}">
+              <form id="add-to-cart-form-{{ medicine.medicine_id }}" method="post" action="{{ url_for('customer.add_to_cart') }}">
                 <input type="hidden" name="medicine_id" value="{{ medicine.medicine_id }}">
                 <input type="hidden" name="quantity" value="1">
                 <button type="submit" class="btn">Add to Cart</button>
@@ -36,4 +36,75 @@
       </table>
     </div>
   </div>
+
+  <!-- Toast Notification for Success Message -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script>
+    // Function to handle and show the success toast notification
+    function showSuccessToast(message) {
+      // Create the toast element
+      const toast = document.createElement("div");
+      toast.classList.add("toast");
+      toast.innerText = message;
+
+      // Get the container and append the toast
+      const toastContainer = document.getElementById("toast-container");
+      toastContainer.appendChild(toast);
+
+      // Display the toast with animation
+      setTimeout(() => {
+        toast.classList.add("show-toast");
+      }, 100);  // Show the toast after 100ms to allow for DOM changes
+
+      // Hide the toast after 3 seconds
+      setTimeout(() => {
+        toast.classList.remove("show-toast");
+        setTimeout(() => {
+          toastContainer.removeChild(toast);  // Remove the toast element after the animation
+        }, 300);  // Ensure toast is fully hidden before removal
+      }, 3000);
+    }
+
+    // Check for flash messages and show the success toast
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          {% if category == 'success' %}
+            showSuccessToast("{{ msg }}");
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </script>
+
+  <style>
+    /* Toast container styling */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+    }
+
+    /* Toast styling */
+    .toast {
+      background-color: #4CAF50; /* Green */
+      color: white;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Show the toast */
+    .show-toast {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  </style>
+
 {% endblock %}

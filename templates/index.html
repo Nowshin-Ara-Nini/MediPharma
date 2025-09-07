@@ -15,4 +15,30 @@
   </ul>
 </nav>
 {% endif %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, msg in messages %}
+    <script>
+      // Show flashed messages as a popup modal
+      var modal = document.createElement('div');
+      modal.style.position = 'fixed';
+      modal.style.top = '0';
+      modal.style.left = '0';
+      modal.style.width = '100vw';
+      modal.style.height = '100vh';
+      modal.style.background = 'rgba(0,0,0,0.4)';
+      modal.style.zIndex = '9999';
+      modal.innerHTML = `
+        <div style="background:#fff;padding:2em;border-radius:10px;max-width:350px;margin:10% auto;text-align:center;">
+          <span style="font-size:22px;color:#16a34a;">✔</span>
+          <p style="margin-top:10px;">{{ msg }}</p>
+          <button onclick="document.body.removeChild(this.parentNode.parentNode)" style="margin-top:15px;padding:8px 18px;border:none;background:#16a34a;color:#fff;border-radius:6px;cursor:pointer;">OK</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    </script>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
 {% endblock %}

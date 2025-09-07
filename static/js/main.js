@@ -4,7 +4,7 @@ async function addToCart(ev, medId){
   const fd = new FormData(form);
   const res = await fetch('/cart/add', { method:'POST', body:fd });
   const data = await res.json();
-  alert(data.msg || (data.ok ? 'Added!' : 'Failed'));
+  // alert(data.msg || (data.ok ? 'Added!' : 'Failed'));
   return false;
 }
 async function toggleWishlist(ev, medId){

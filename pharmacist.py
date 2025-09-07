@@ -49,8 +49,43 @@ def pharmacist_medicines():
 @pharmacist_bp.get("/pharmacist_orders")
 def pharmacist_orders():
     with DB() as cur:
-        cur.execute("SELECT * FROM orders WHERE pharmacist_id=%s", (session["uid"],))
-        orders = cur.fetchall()
+        # Single query to get orders with their items
+        cur.execute("""
+            SELECT 
+                o.order_id, o.customer_id, o.total_amount, o.status,
+                o.created_at, o.payment_method,
+                oi.medicine_id, oi.quantity, m.name as medicine_name
+            FROM orders o
+            LEFT JOIN order_items oi ON o.order_id = oi.order_id
+            LEFT JOIN medicines m ON oi.medicine_id = m.medicine_id
+            WHERE o.status = 'pending'
+            ORDER BY o.order_id
+        """)
+        
+        # Group items by order
+        orders_dict = {}
+        for row in cur.fetchall():
+            order_id = row['order_id']
+            if order_id not in orders_dict:
+                orders_dict[order_id] = {
+                    'order_id': order_id,
+                    'customer_id': row['customer_id'],
+                    'total_amount': row['total_amount'],
+                    'status': row['status'],
+                    'created_at': row['created_at'],
+                    'payment_method': row['payment_method'],
+                    'items': []
+                }
+            
+            if row['medicine_id']:  # Only add if there are items
+                orders_dict[order_id]['items'].append({
+                    'medicine_id': row['medicine_id'],
+                    'quantity': row['quantity'],
+                    'name': row['medicine_name']
+                })
+        
+        orders = list(orders_dict.values())
+    
     return render_template("pharmacist_orders.html", orders=orders)
 
 @pharmacist_bp.get("/pharmacist_notifications", endpoint="notifications")
@@ -156,3 +191,66 @@ def upload_medicine_to_catalog():
             flash("Medicine added to the catalog successfully.", "success")
     
     return redirect(url_for("pharmacist.pharmacist_medicines"))
+
+@pharmacist_bp.route('/orders/fulfill/<int:order_id>', methods=['POST'])
+def fulfill_order(order_id):
+    with DB() as cur:
+        # Update the order status to 'fulfilled'
+        cur.execute("""
+            UPDATE orders
+            SET status = 'fulfilled'
+            WHERE order_id = %s
+        """, (order_id,))
+
+        # Get all items in the order
+        cur.execute("""
+            SELECT medicine_id, quantity
+            FROM order_items
+            WHERE order_id = %s
+        """, (order_id,))
+        items = cur.fetchall()
+
+        # Update the stock in the inventory for each item in the order
+        for item in items:
+            cur.execute("""
+                UPDATE inventory_items
+                SET stock_quantity = stock_quantity - %s
+                WHERE medicine_id = %s
+            """, (item['quantity'], item['medicine_id']))
+
+    # Redirect pharmacist to the "My Orders" page after fulfilling the order
+    return redirect(url_for('pharmacist.my_orders'))
+
+@pharmacist_bp.route('/my_orders')
+def my_orders():
+    with DB() as cur:
+        # First, let's debug what's actually in the orders table
+        cur.execute("SELECT * FROM orders WHERE status = 'pending'")
+        raw_orders = cur.fetchall()  # ADD PARENTHESES HERE
+        print(f"DEBUG: Raw pending orders: {raw_orders}")
+        
+        # Fetch orders with customer information
+        cur.execute("""
+            SELECT o.order_id, o.customer_id, o.total_amount, o.status, 
+                   o.created_at, o.payment_method, u.name as customer_name
+            FROM orders o
+            LEFT JOIN users u ON o.customer_id = u.user_id
+            WHERE o.status = 'pending'
+            ORDER BY o.created_at DESC
+        """)
+        orders = cur.fetchall()  # ADD PARENTHESES HERE
+        print(f"DEBUG: Processed orders: {orders}")
+
+        # For each order, fetch the corresponding items
+        for order in orders:
+            cur.execute("""
+                SELECT oi.medicine_id, oi.quantity, m.name, m.price
+                FROM order_items oi
+                JOIN medicines m ON oi.medicine_id = m.medicine_id
+                WHERE oi.order_id = %s
+            """, (order['order_id'],))
+            order_items = cur.fetchall()  # ADD PARENTHESES HERE
+            order['items'] = order_items
+            print(f"DEBUG: Order {order['order_id']} items: {order_items}")
+
+    return render_template('pharmacist_orders.html', orders=orders)

@@ -23,8 +23,22 @@ def customer_profile():
 def customer_orders():
     with DB() as cur:
         cur.execute("SELECT * FROM orders WHERE customer_id=%s", (session["uid"],))
-        orders = cur.fetchall()
-    return render_template("customer_orders.html", orders=orders)
+        orders_data = []
+        
+        for order_record in cur.fetchall():
+            order = dict(order_record)
+            
+            cur.execute("""
+                SELECT oi.medicine_id, oi.quantity, m.name, oi.price
+                FROM order_items oi
+                JOIN medicines m ON oi.medicine_id = m.medicine_id
+                WHERE oi.order_id = %s
+            """, (order['order_id'],))
+            order['items'] = list(cur.fetchall())
+            orders_data.append(order)
+
+    return render_template("customer_orders.html", orders=orders_data)
+
 
 # Customer Appointments
 @customer_bp.get("/my_appointments")

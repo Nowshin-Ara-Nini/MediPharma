@@ -22,8 +22,11 @@ def pharmacist_medicines():
         return redirect(url_for("auth.login_page"))
 
     with DB() as cur:
+        # Fetch all medicines uploaded by companies with their stock quantity
         cur.execute("""
             SELECT
+                c.user_id AS company_id,
+                u.name AS company_name,
                 m.medicine_id,
                 m.name,
                 m.description,
@@ -32,15 +35,17 @@ def pharmacist_medicines():
                 m.expiry_date,
                 COALESCE(SUM(ii.stock_quantity), 0) AS stock
             FROM inventories i
+            JOIN companies c       ON c.user_id = i.company_id
+            JOIN users u           ON u.user_id = c.user_id
             JOIN inventory_items ii ON ii.inventory_id = i.inventory_id
             JOIN medicines m        ON m.medicine_id = ii.medicine_id
-            WHERE i.pharmacist_id = %s
-            GROUP BY m.medicine_id, m.name, m.description, m.price, m.production_date, m.expiry_date
-            ORDER BY m.name
-        """, (session["uid"],))
+            GROUP BY c.user_id, u.name, m.medicine_id, m.name, m.description, m.price, m.production_date, m.expiry_date
+            ORDER BY m.name, u.name
+        """)
         medicines = cur.fetchall()
 
     return render_template("pharmacist_medicines.html", medicines=medicines)
+
 @pharmacist_bp.get("/pharmacist_orders")
 def pharmacist_orders():
     with DB() as cur:
@@ -67,24 +72,62 @@ def request_stock():
         return redirect(url_for("auth.login_page"))
 
     pharmacist_id = session["uid"]
-    company_id  = request.form.get("company_id", type=int)
+    company_id = request.form.get("company_id", type=int)
     medicine_id = request.form.get("medicine_id", type=int)
-    quantity    = request.form.get("quantity", type=int)
+    quantity = request.form.get("quantity", type=int)
 
-    if not (company_id and medicine_id and quantity):
-        flash("Missing request data.", "error")
-        return redirect(url_for("pharmacist.pharmacist_medicines"))
+    # Check if the pharmacist is trying to request medicine that's already in another inventory
+    with DB() as cur:
+        cur.execute("""
+            SELECT i.pharmacist_id
+            FROM inventories i
+            JOIN inventory_items ii ON ii.inventory_id = i.inventory_id
+            WHERE ii.medicine_id = %s AND i.pharmacist_id != %s
+        """, (medicine_id, pharmacist_id))
 
+        # If a result is found, that means another pharmacist already has this medicine
+        existing_pharmacist = cur.fetchone()
+        if existing_pharmacist:
+            flash("Someone already has this medicine in their inventory.", "warning")
+            return redirect(url_for("pharmacist.pharmacist_medicines"))
+
+    # Check if the pharmacist is requesting at least 50
     if quantity < 50:
         flash("Minimum request quantity is 50.", "error")
         return redirect(url_for("pharmacist.pharmacist_medicines"))
 
-    from db import DB
+    # Check if this pharmacist already has this medicine in their inventory
     with DB() as cur:
         cur.execute("""
-            INSERT INTO stock_requests (pharmacist_id, company_id, medicine_id, quantity, status)
-            VALUES (%s, %s, %s, %s, 'pending')
-        """, (pharmacist_id, company_id, medicine_id, quantity))
+            SELECT ii.stock_quantity
+            FROM inventories i
+            JOIN inventory_items ii ON ii.inventory_id = i.inventory_id
+            WHERE i.pharmacist_id = %s AND ii.medicine_id = %s
+        """, (pharmacist_id, medicine_id))
 
-    flash("Stock request sent to the company.", "success")
+        row = cur.fetchone()
+        if row:
+            # If the pharmacist already has stock, we just update the quantity
+            new_quantity = row["stock_quantity"] + quantity
+            cur.execute("""
+                UPDATE inventory_items
+                SET stock_quantity = %s
+                WHERE inventory_id IN (
+                    SELECT inventory_id FROM inventories WHERE pharmacist_id = %s
+                ) AND medicine_id = %s
+            """, (new_quantity, pharmacist_id, medicine_id))
+        else:
+            # If not, create a new inventory entry for the pharmacist
+            cur.execute("""
+                INSERT INTO inventories (company_id, pharmacist_id) VALUES (%s, %s)
+            """, (company_id, pharmacist_id))
+            inventory_id = cur.lastrowid
+
+            # Now add the medicine to the pharmacist's inventory
+            cur.execute("""
+                INSERT INTO inventory_items (inventory_id, medicine_id, stock_quantity)
+                VALUES (%s, %s, %s)
+            """, (inventory_id, medicine_id, quantity))
+
+    flash("Your stock request is successful", "success")
     return redirect(url_for("pharmacist.pharmacist_medicines"))

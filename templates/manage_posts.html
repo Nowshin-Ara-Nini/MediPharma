@@ -1,27 +1,104 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Manage Posts</h1>
-<table>
-  <thead>
-    <tr>
-      <th>Title</th>
-      <th>Content</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for post in posts %}
-    <tr>
-      <td>{{ post.title }}</td>
-      <td>{{ post.content }}</td>
-      <td>
-        <form action="{{ url_for('admin.delete_post', post_id=post.post_id) }}" method="post">
-          <button type="submit">Delete</button>
-        </form>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<style>
+  :root {
+  --panel: #ffffff; /* White background for the container */
+  --muted: #94a3b8; /* Muted text */
+  --text: #333; /* Dark text color */
+  --bd: rgba(148, 163, 184, 0.18); /* Light border */
+}
+
+.manage-posts-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+h1 {
+    margin: 0 0 12px;
+    color: var(--text); /* Manage Posts title color */
+}
+
+.posts-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 860px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+thead th {
+    position: sticky;
+    top: 0;
+    background: #2d5d57;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 13px;
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--bd);
+}
+
+tbody td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.10);
+    color: var(--text);
+}
+
+tbody tr:hover {
+    background: rgba(124, 58, 237, 0.06);
+}
+
+.btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.delete-btn {
+    background-color: #e74c3c; /* Red background for delete button */
+    color: white;
+}
+
+.delete-btn:hover {
+    background-color: #c0392b;
+}
+
+table th, table td {
+    text-align: left;
+    font-size: 1rem;
+}
+
+</style>
+<div class="manage-posts-container">
+    <h1>Manage Posts</h1>
+    <table class="posts-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Content</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in posts %}
+            <tr>
+                <td>{{ post.title }}</td>
+                <td>{{ post.content }}</td>
+                <td>
+                    <form action="{{ url_for('admin.delete_post', post_id=post.post_id) }}" method="post">
+                        <button type="submit" class="btn delete-btn">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

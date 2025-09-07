@@ -9,15 +9,16 @@
 </div> -->
 
 <!-- Medicines Table -->
+<!-- company_medicines.html -->
 <table>
   <thead>
     <tr>
       <th>Name</th>
       <th>Description</th>
       <th>Price</th>
-      <th>Production_Date</th>
-      <th>Expiry_Date</th>
-      <th>Actions</th>
+      <th>Production Date</th>
+      <th>Expiry Date</th>
+      <th>Stock</th>
     </tr>
   </thead>
   <tbody>
@@ -26,11 +27,16 @@
       <td>{{ medicine.name }}</td>
       <td>{{ medicine.description }}</td>
       <td>৳{{ '%.2f'|format(medicine.price) }}</td>
-      <td><a href="#" class="btn">Edit</a> | <a href="#" class="btn">Delete</a></td>
+      <td>{{ medicine.production_date }}</td>
+      <td>{{ medicine.expiry_date }}</td>
+      <td>{{ medicine.stock }}</td>
     </tr>
+    {% else %}
+    <tr><td colspan="6">No medicines in your inventory yet.</td></tr>
     {% endfor %}
   </tbody>
 </table>
+
 
 <!-- Upload Medicine Form -->
 <div id="upload-medicine-form" class="upload-form-container">

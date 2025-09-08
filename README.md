@@ -19,8 +19,7 @@ medicine in a regulated and efficient way.
 
 > Users can:
 >
-> ● Add items to a cart and proceed to checkout ● Save items to a
-> wishlist for later purchase
+> ● Add items to a cart and proceed to checkout 
 >
 > ● View availability status (in stock, low stock, out of stock)
 >
@@ -68,6 +67,11 @@ medicine in a regulated and efficient way.
 > ● Automatic reminders for a refill based ● on past purchase
 >
 > **Optional**: Let users customize notification preferences.
+> **7.** Inventory**:
+ Companies can upload new medicines and track their inventory levels. 
+ Pharmacists can request additional stock from companies
+ The system allows for filtering medicines based on stock availability (e.g., in-stock, low-stock, out-of-stock), helping manage the purchasing and restocking processes
+
 
 Professional dashboard
 

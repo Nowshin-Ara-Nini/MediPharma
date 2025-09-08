@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+  <h1>Welcome to MediPharma</h1>
+  <p>Your one-stop solution for medicine ordering and management.</p>
+  <p>Search, compare prices, add to cart, and checkout securely.</p>
+  <a href="{{ url_for('shop.medicines') }}" class="btn">Browse medicines</a>
+</section>
+
+    <!-- Check if there are any flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div id="order-confirmed-toast" class="toast-container">
+          {% for category, message in messages %}
+            {% if category == 'success' %}
+              <div class="toast show-toast">{{ message }}</div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <script>
+    // Toast pop-up logic
+    document.addEventListener('DOMContentLoaded', function() {
+      const toast = document.getElementById('order-confirmed-toast');
+      if (toast) {
+        // Show the toast
+        toast.classList.add('show-toast');
+        
+        // Hide after 3 seconds
+        setTimeout(() => {
+          toast.classList.remove('show-toast');
+          
+          // Remove from DOM after animation completes
+          setTimeout(() => {
+            toast.remove();
+          }, 300);
+        }, 3000);
+      }
+    });
+  </script>
+
+  <style>
+    /* Toast container styling */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+    }
+
+    .toast {
+      background-color: #4CAF50;
+      color: white;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Show the toast */
+    .show-toast {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  </style>
+{% endblock %}

@@ -1,27 +1,160 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h1>My Rating and Reviews</h1>
-  {% if reviews %}
-    <table>
-      <thead>
-        <tr>
-          <th>Medicine Name</th>
-          <th>Rating</th>
-          <th>Comments</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for review in reviews %}
-          <tr>
-            <td>{{ review.medicine_name }}</td>
-            <td>{{ review.rating }}</td>
-            <td>{{ review.comments or 'No comments' }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p>You haven't left any reviews yet.</p>
-  {% endif %}
+<style>
+  .reviews-container {
+    background-color: #ffffff;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .page-title {
+    font-size: 2rem;
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .table-wrap {
+    margin-top: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead {
+    background-color: #34bfa3;
+    color: white;
+  }
+
+  thead th {
+    padding: 14px;
+    text-align: left;
+    font-weight: bold;
+    font-size: 16px;
+    border-bottom: 2px solid #e0e0e0;
+  }
+
+  tbody td {
+    padding: 12px;
+    font-size: 14px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  tbody tr:hover {
+    background-color: #f1f1f1;
+  }
+
+  .rating {
+    font-size: 16px;
+    color: #f39c12;
+  }
+
+  .star {
+    margin-right: 3px;
+    color: #ddd;
+  }
+
+  .star.filled {
+    color: #f39c12;
+  }
+
+  .no-reviews-message {
+    text-align: center;
+    font-size: 16px;
+    color: #777;
+    margin-top: 20px;
+  }
+
+  .reviews-table {
+    width: 100%;
+    margin-top: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .reviews-table th,
+  .reviews-table td {
+    padding: 15px;
+    text-align: left;
+    font-size: 14px;
+  }
+
+  .reviews-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  .reviews-table th {
+    background-color: #34bfa3;
+    color: white;
+    font-weight: bold;
+  }
+
+  .reviews-table td {
+    border-bottom: 1px solid #ddd;
+  }
+
+  .reviews-table tbody tr:hover {
+    background-color: #f1f1f1;
+  }
+
+  /* Media query for responsiveness */
+  @media (max-width: 768px) {
+    .reviews-container {
+      padding: 20px;
+    }
+
+    .reviews-table th,
+    .reviews-table td {
+      font-size: 12px;
+      padding: 10px;
+    }
+  }
+</style>
+  <div class="reviews-container">
+    <h1 class="page-title">My Rating and Reviews</h1>
+
+    {% if reviews %}
+      <div class="table-wrap">
+        <table class="reviews-table">
+          <thead>
+            <tr>
+              <th>Medicine Name</th>
+              <th>Rating</th>
+              <th>Comments</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for review in reviews %}
+              <tr>
+                <td>{{ review.medicine_name }}</td>
+                <td>
+                  <!-- Add a star rating visual representation -->
+                  <div class="rating">
+                    {% for i in range(1, 6) %}
+                      <span class="star {{ 'filled' if i <= review.rating else '' }}">&#9733;</span>
+                    {% endfor %}
+                  </div>
+                </td>
+                <td>{{ review.comments or 'No comments' }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="no-reviews-message">You haven't left any reviews yet.</p>
+    {% endif %}
+  </div>
 {% endblock %}
+

@@ -1,52 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <div class="page">
-    <section class="hero">
-      <h1>Your Cart</h1>
-      <p>Review the medicines in your cart.</p>
-    </section>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Medicine</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>Total</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for item in cart_items %}
-            <tr>
-              <td>{{ item.name }}</td>
-              <td>৳{{ '%.2f'|format(item.price) }}</td>
-              <td>
-                <div class="quantity-wrapper">
-                  <button class="quantity-btn" data-action="decrease" data-item-id="{{ item.medicine_id }}">-</button>
-                  <input type="number" value="{{ item.quantity }}" min="1" class="quantity-input" data-item-id="{{ item.medicine_id }}">
-                  <button class="quantity-btn" data-action="increase" data-item-id="{{ item.medicine_id }}">+</button>
-                </div>
-              </td>
-              <td class="subtotal">৳{{ '%.2f'|format(item.price * item.quantity) }}</td>
-              <td><button class="remove-btn" data-item-id="{{ item.medicine_id }}">Remove</button></td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-
-    <div class="cart-total">
-      <h3>Total Amount: ৳{{ total_amount }}</h3>
-      <div class="proceed-btn">Proceed to Checkout</div>
-    </div>
-  </div>
-{% endblock %}
-
-{% block styles %}
-<style>
+<style> 
   .page {
     max-width: 1100px;
     margin: 0 auto;
@@ -164,45 +119,61 @@
     background-color: #2b8a73;
   }
 </style>
+  <div class="page">
+    <h1>Your Cart</h1>
+    <p>Review the medicines in your cart before proceeding to checkout.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Medicine</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in cart_items %}
+            <tr>
+              <td>{{ item.name }}</td>
+              <td>৳{{ '%.2f'|format(item.price) }}</td>
+              <td>
+                <!-- Form for updating quantity -->
+                <form method="POST" action="{{ url_for('shop.update_cart_item', medicine_id=item.medicine_id) }}">
+                  <input type="number" name="qty" value="{{ item.quantity }}" min="1" required>
+                  <button type="submit" class="btn">Update Quantity</button>
+                </form>
+              </td>
+              <td class="subtotal">৳{{ '%.2f'|format(item.price * item.quantity) }}</td>
+              <td>
+                <!-- Form for removing item from cart -->
+                <form method="POST" action="{{ url_for('shop.remove_cart_item', medicine_id=item.medicine_id) }}">
+                  <button type="submit" class="btn">Remove</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cart-total">
+      <h3>Total Amount: ৳{{ total_amount }}</h3>
+      <div class="proceed-btn">Proceed to Checkout</div>
+    </div>
+ 
+  {% if expiry_warning %}
+      <div class="expiry-warning">
+        <h4>Warning: The following medicines are nearing expiry:</h4>
+        <ul>
+          {% for item in expiry_warning %}
+            <li>{{ item.name }} - Expiry Date: {{ item.expiry_date }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  </div>
 {% endblock %}
 
-{% block scripts %}
-<script>
-  document.querySelectorAll('.quantity-btn').forEach(button => {
-    button.addEventListener('click', function() {
-      const action = this.getAttribute('data-action');
-      const itemId = this.getAttribute('data-item-id');
-      const input = document.querySelector(`.quantity-input[data-item-id="${itemId}"]`);
-      let quantity = parseInt(input.value);
-
-      // Increase or decrease quantity based on button click
-      if (action === 'increase') {
-        quantity++;
-      } else if (action === 'decrease' && quantity > 1) {
-        quantity--;
-      }
-
-      // Update the input value
-      input.value = quantity;
-
-      // Update the subtotal for this item
-      const row = this.closest('tr');
-      const price = parseFloat(row.querySelector('td:nth-child(2)').textContent.replace('৳', ''));
-      const subtotalCell = row.querySelector('.subtotal');
-      const subtotal = price * quantity;
-      subtotalCell.textContent = `৳${subtotal.toFixed(2)}`;
-
-      // Optionally, update the total amount at the bottom
-      updateTotal();
-    });
-  });
-
-  function updateTotal() {
-    let total = 0;
-    document.querySelectorAll('.subtotal').forEach(cell => {
-      total += parseFloat(cell.textContent.replace('৳', ''));
-    });
-    document.querySelector('.cart-total h3').textContent = `Total Amount: ৳${total.toFixed(2)}`;
-  }
-</script>
-{% endblock %}

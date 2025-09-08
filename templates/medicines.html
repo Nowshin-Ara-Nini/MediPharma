@@ -8,14 +8,21 @@
           <h3>{{ medicine.name }}</h3>
           <p>{{ medicine.description }}</p>
           <p class="price"><strong>Price: ৳{{ '%.2f'|format(medicine.price) }}</strong></p>
-          <form class="add-to-cart-form" data-medicine-id="{{ medicine.medicine_id }}">
+          
+          <!-- Add to Cart Form -->
+          <form class="add-to-cart-form" action="{{ url_for('shop.cart_add') }}" method="POST">
+            <input type="hidden" name="medicine_id" value="{{ medicine.medicine_id }}">
             <input type="number" name="qty" value="1" min="1" max="10" class="quantity-input">
             <button type="submit" class="btn add-to-cart-btn">Add to Cart</button>
           </form>
 
-          <!-- Feedback Button that triggers the page redirection -->
+          <!-- Feedback Button -->
           <a href="{{ url_for('feedback', medicine_id=medicine.medicine_id) }}" class="btn feedback-btn">Leave Feedback</a>
-
+          
+          {% if message %}
+            <!-- Display success message -->
+            <p class="message">{{ message }}</p>
+          {% endif %}
         </div>
       {% endfor %}
     </div>
@@ -24,6 +31,7 @@
 
 {% block styles %}
 <style>
+  /* Add your styles here */
   /* Main container with white background */
   .medicines-container {
     background-color: #ffffff;
@@ -186,5 +194,6 @@
       padding: 20px;
     }
   }
+</style>
 </style>
 {% endblock %}

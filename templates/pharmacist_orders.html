@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Pending Orders</h2>
+  
+  {% if orders %}
+    <table>
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Customer</th>
+          <th>Total Amount</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th>Order Items</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+          <tr>
+            <td>{{ order.order_id }}</td>
+            <td>{{ order.customer_name }}</td>
+            <td>৳{{ '%.2f'|format(order.total_amount) }}</td>
+            <td>{{ order.status }}</td>
+            <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') if order.created_at else 'N/A' }}</td>
+            <td>
+              {% if order.items %}
+                {% for item in order.items %}
+                  <div>{{ item.name }} - {{ item.quantity }} × ৳{{ '%.2f'|format(item.price) }}</div>
+                {% endfor %}
+              {% else %}
+                No items
+              {% endif %}
+            </td>
+            <td>
+              {% if order.status == 'pending' %}
+                <form action="{{ url_for('pharmacist.fulfill_order', order_id=order.order_id) }}" method="post">
+                  <button type="submit" class="btn">Fulfill Order</button>
+                </form>
+              {% else %}
+                <span>Fulfilled</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No pending orders found.</p>
+  {% endif %}
+{% endblock %}

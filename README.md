@@ -56,21 +56,11 @@ medicine in a regulated and efficient way.
 > ● Option to auto-hide expired medicine from product selling ● Shows
 > expiry dates clearly on all product pagE
 >
-> **Optional-** **Notification** **Email**
->
-> Keep users informed in real time
->
-> ● Order confirmation, shipment, and delivery updates ●
-> Out-of-stock/back-in-stock alerts for wishlist items ● Approval/denial
-> of prescription orders
->
-> ● Automatic reminders for a refill based ● on past purchase
->
-> **Optional**: Let users customize notification preferences.
-> **7.** Inventory**:
+> 
+> **7.** ** Inventory**:
  Companies can upload new medicines and track their inventory levels. 
- Pharmacists can request additional stock from companies
- The system allows for filtering medicines based on stock availability (e.g., in-stock, low-stock, out-of-stock), helping manage the purchasing and restocking processes
+ Pharmacists can request additional stock from companies.
+ The system allows for filtering medicines based on stock availability (e.g., in-stock, low-stock, out-of-stock), helping manage the purchasing and restocking processes.
 
 
 Professional dashboard

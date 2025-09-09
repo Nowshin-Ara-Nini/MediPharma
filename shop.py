@@ -23,8 +23,9 @@ def cart_add():
     if not uid:
         return jsonify({"ok": False, "msg": "Login required"}), 401
 
+    # Get the medicine ID and quantity from the form
     med_id = int(request.form["medicine_id"])
-    qty = max(1, int(request.form.get("qty", 1)))  # Default to 1 if no quantity is provided
+    qty = max(1, int(request.form.get("qty", 1)))  # Ensure quantity is at least 1
 
     with DB() as cur:
         # Check if the user already has a cart
@@ -40,17 +41,17 @@ def cart_add():
 
         # Check if the item is already in the cart
         cur.execute("SELECT quantity FROM cart_items WHERE cart_id=%s AND medicine_id=%s", (cart_id, med_id))
-        ex = cur.fetchone()
+        existing_item = cur.fetchone()
 
-        if ex:
-            # If the item exists, increase the quantity by the requested amount
-            new_quantity = ex["quantity"] + qty
+        if existing_item:
+            # If the medicine already exists in the cart, update the quantity
+            new_quantity = existing_item["quantity"] + qty
             cur.execute("UPDATE cart_items SET quantity=%s WHERE cart_id=%s AND medicine_id=%s", (new_quantity, cart_id, med_id))
         else:
-            # If the item doesn't exist, add it to the cart with the requested quantity
+            # If the item is not in the cart, add it
             cur.execute("INSERT INTO cart_items(cart_id, medicine_id, quantity) VALUES(%s, %s, %s)", (cart_id, med_id, qty))
 
-        # Recalculate the total amount in the cart
+        # Update the total amount in the cart
         cur.execute("""
             SELECT SUM(ci.quantity * m.price) AS total
             FROM cart_items ci
@@ -58,22 +59,19 @@ def cart_add():
             WHERE ci.cart_id=%s
         """, (cart_id,))
         total = cur.fetchone()["total"] or 0
-
-        # Update the total amount in the carts table
         cur.execute("UPDATE carts SET total_amount=%s WHERE cart_id=%s", (total, cart_id))
 
-    return jsonify({"ok": True, "msg": "Added to cart", "total": total})
-
-@shop_bp.get("/cart")
+    flash("Added to cart", "success")
+    return redirect(url_for("shop.cart_page"))  # Redirect to cart page to show updated cart
+@shop_bp.get('/cart')
 def cart_page():
-    if session.get("role") != "customer":
-        return redirect(url_for("auth.login_page"))
+    uid = current_user_id()
+    if not uid:
+        flash("Login required", "error")
+        return redirect(url_for("auth.login_page"))  # Redirect to login if not logged in
 
     with DB() as cur:
-        # Get the cart for the current customer
-        cur.execute("""
-            SELECT cart_id FROM carts WHERE user_id = %s
-        """, (session["uid"],))
+        cur.execute("SELECT cart_id FROM carts WHERE user_id = %s", (uid,))
         cart = cur.fetchone()
 
         if not cart:
@@ -81,30 +79,21 @@ def cart_page():
             return redirect(url_for("shop.medicines"))
 
         cart_id = cart['cart_id']
-
-        # Get the items in the cart with stock information
         cur.execute("""
-            SELECT 
-                m.medicine_id, 
-                m.name, 
-                m.description, 
-                m.price, 
-                ci.quantity,
-                ii.stock_quantity
+            SELECT m.medicine_id, m.name, m.price, ci.quantity
             FROM cart_items ci
-            JOIN medicines m ON ci.medicine_id = m.medicine_id
-            JOIN inventory_items ii ON ci.medicine_id = ii.medicine_id
+            JOIN medicines m ON m.medicine_id = ci.medicine_id
             WHERE ci.cart_id = %s
         """, (cart_id,))
         cart_items = cur.fetchall()
 
-        # Calculate the total amount in the cart
         cur.execute("""
             SELECT total_amount FROM carts WHERE cart_id = %s
         """, (cart_id,))
         total_amount = cur.fetchone()['total_amount']
 
     return render_template("cart.html", cart_items=cart_items, total_amount=total_amount)
+
 
 @shop_bp.get("/wishlist")
 def wishlist_page():
@@ -222,31 +211,28 @@ def update_cart_item(medicine_id):
     uid = current_user_id()
 
     if not uid:
-        return jsonify({"ok": False, "msg": "Login required"}), 401
+        flash("Login required", "error")
+        return redirect(url_for('auth.login_page'))  # Redirect to login if not logged in
 
-    # Get the new quantity from the request body
-    data = request.get_json()
-    new_quantity = data.get('quantity')
-
-    if new_quantity is None or new_quantity < 1:
-        return jsonify({"ok": False, "msg": "Invalid quantity"}), 400
+    qty = int(request.form.get('qty', 1))  # Get new quantity from the form
 
     with DB() as cur:
-        # Get the cart ID
+        # Get the cart ID for the logged-in user
         cur.execute("SELECT cart_id FROM carts WHERE user_id = %s", (uid,))
         cart = cur.fetchone()
 
         if not cart:
-            return jsonify({"ok": False, "msg": "No cart found"}), 404
+            flash("No cart found.", "error")
+            return redirect(url_for('shop.cart_page'))
 
         cart_id = cart['cart_id']
 
-        # Update the quantity of the item in the cart
+        # Update the quantity of the medicine in the cart
         cur.execute("""
             UPDATE cart_items
             SET quantity = %s
             WHERE cart_id = %s AND medicine_id = %s
-        """, (new_quantity, cart_id, medicine_id))
+        """, (qty, cart_id, medicine_id))
 
         # Update the total amount in the cart
         cur.execute("""
@@ -257,28 +243,32 @@ def update_cart_item(medicine_id):
         """, (cart_id,))
         total = cur.fetchone()['total'] or 0
 
-        # Update the total amount in the carts table
         cur.execute("""
             UPDATE carts
             SET total_amount = %s
             WHERE cart_id = %s
         """, (total, cart_id))
-    return jsonify({"ok": True, "msg": "Cart updated","new_total": total})
+
+    flash("Cart updated", "success")
+    return redirect(url_for('shop.cart_page'))  # Redirect to the updated cart page
+
 
 @shop_bp.post('/cart/remove/<int:medicine_id>')
 def remove_cart_item(medicine_id):
     uid = current_user_id()
 
     if not uid:
-        return jsonify({"ok": False, "msg": "Login required"}), 401
+        flash("Login required", "error")
+        return redirect(url_for('auth.login_page'))  # Redirect to login if not logged in
 
     with DB() as cur:
-        # Get the cart ID
+        # Get the cart ID for the logged-in user
         cur.execute("SELECT cart_id FROM carts WHERE user_id = %s", (uid,))
         cart = cur.fetchone()
 
         if not cart:
-            return jsonify({"ok": False, "msg": "No cart found"}), 404
+            flash("No cart found.", "error")
+            return redirect(url_for('shop.cart_page'))
 
         cart_id = cart['cart_id']
 
@@ -297,11 +287,11 @@ def remove_cart_item(medicine_id):
         """, (cart_id,))
         total = cur.fetchone()['total'] or 0
 
-        # Update the total amount in the carts table
         cur.execute("""
             UPDATE carts
             SET total_amount = %s
             WHERE cart_id = %s
         """, (total, cart_id))
 
-    return jsonify({"ok": True, "msg": "Item removed from cart","new_total": total})
+    flash("Item removed from cart", "success")
+    return redirect(url_for('shop.cart_page'))  # Redirect to the updated cart page

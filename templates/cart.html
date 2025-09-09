@@ -1,6 +1,124 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style> 
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  .hero h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+
+  .table-wrap {
+    margin-top: 20px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead {
+    background-color: #34bfa3;
+    color: white;
+  }
+
+  thead th {
+    padding: 12px;
+    text-align: left;
+    font-weight: bold;
+  }
+
+  tbody td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .quantity-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .quantity-btn {
+    background-color: transparent;
+    border: 1px solid #34bfa3;
+    color: #34bfa3;
+    border-radius: 5px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 18px;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+  }
+
+  .quantity-btn:hover {
+    background-color: #34bfa3;
+    color: white;
+  }
+
+  .quantity-input {
+    width: 60px;
+    text-align: center;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+
+  .remove-btn {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .remove-btn:hover {
+    background-color: #dc2626;
+  }
+
+  .cart-total {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-top: 1px solid #ddd;
+  }
+
+  .cart-total h3 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-left: 20px;
+  }
+
+  .proceed-btn {
+    background-color: #34bfa3;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    margin-right: 20px;
+  }
+
+  .proceed-btn:hover {
+    background-color: #2b8a73;
+  }
+</style>
   <div class="page">
     <h1>Your Cart</h1>
     <p>Review the medicines in your cart before proceeding to checkout.</p>
@@ -9,7 +127,7 @@
       <table>
         <thead>
           <tr>
-            <th>Name</th>
+            <th>Medicine</th>
             <th>Price</th>
             <th>Quantity</th>
             <th>Total</th>
@@ -18,118 +136,44 @@
         </thead>
         <tbody>
           {% for item in cart_items %}
-          <tr id="item-{{ item.medicine_id }}">
-            <td>{{ item.name }}</td>
-            <td class="price" data-price="{{ item.price }}">৳{{ '%.2f'|format(item.price) }}</td>
-            <td>
-              <button class="quantity-btn" onclick="changeQuantity({{ item.medicine_id }}, -1)">-</button>
-              <span id="quantity-{{ item.medicine_id }}">{{ item.quantity }}</span>
-              <button class="quantity-btn" onclick="changeQuantity({{ item.medicine_id }}, 1)">+</button>
-            </td>
-            <td id="total-{{ item.medicine_id }}">৳{{ '%.2f'|format(item.price * item.quantity) }}</td>
-            <td><button class="btn" onclick="removeItem({{ item.medicine_id }})">Remove</button></td>
-          </tr>
+            <tr>
+              <td>{{ item.name }}</td>
+              <td>৳{{ '%.2f'|format(item.price) }}</td>
+              <td>
+                <!-- Form for updating quantity -->
+                <form method="POST" action="{{ url_for('shop.update_cart_item', medicine_id=item.medicine_id) }}">
+                  <input type="number" name="qty" value="{{ item.quantity }}" min="1" required>
+                  <button type="submit" class="btn">Update Quantity</button>
+                </form>
+              </td>
+              <td class="subtotal">৳{{ '%.2f'|format(item.price * item.quantity) }}</td>
+              <td>
+                <!-- Form for removing item from cart -->
+                <form method="POST" action="{{ url_for('shop.remove_cart_item', medicine_id=item.medicine_id) }}">
+                  <button type="submit" class="btn">Remove</button>
+                </form>
+              </td>
+            </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
 
     <div class="cart-total">
-      <h3>Total: ৳<span id="total-amount">{{ total_amount | round(2) }}</span></h3>
-      <a href="{{ url_for('shop.payment_page') }}" class="btn">Proceed to Checkout</a>
+      <h3>Total Amount: ৳{{ total_amount }}</h3>
+      <div class="proceed-btn">Proceed to Checkout</div>
     </div>
+ 
+  {% if expiry_warning %}
+      <div class="expiry-warning">
+        <h4>Warning: The following medicines are nearing expiry:</h4>
+        <ul>
+          {% for item in expiry_warning %}
+            <li>{{ item.name }} - Expiry Date: {{ item.expiry_date }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
   </div>
-
-  <script>
-    // Function to change the quantity of an item
-    function changeQuantity(medicineId, change) {
-      const quantityElement = document.getElementById("quantity-" + medicineId);
-      const currentQuantity = parseInt(quantityElement.textContent);
-
-      let newQuantity = currentQuantity + change;
-      if (newQuantity < 1) return;  // Prevent quantity from going below 1
-
-      // Get the price from the data attribute
-      const priceCell = document.querySelector(`#item-${medicineId} .price`);
-      const price = parseFloat(priceCell.getAttribute('data-price'));
-      
-      // Calculate the new total for this item
-      const newItemTotal = price * newQuantity;
-      
-      // Update the quantity and total displayed on the page
-      quantityElement.textContent = newQuantity;
-      document.getElementById("total-" + medicineId).textContent = "৳" + newItemTotal.toFixed(2);
-
-      // Recalculate the entire cart total
-      recalculateTotal();
-
-      // Send AJAX request to update the cart in the database
-      fetch(`/cart/update/${medicineId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          quantity: newQuantity
-        })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (!data.ok) {
-          alert("Failed to update cart.");
-          // Reload the page to sync with server data
-          location.reload();
-        }
-      })
-      .catch(error => {
-        console.error("Error:", error);
-        alert("Failed to update cart.");
-        location.reload();
-      });
-    }
-
-    // Function to recalculate the entire cart total
-    function recalculateTotal() {
-      let total = 0;
-      const itemTotalElements = document.querySelectorAll('[id^="total-"]');
-      
-      itemTotalElements.forEach(element => {
-        // Skip the main total-amount element
-        if (element.id === 'total-amount') return;
-        
-        const totalText = element.textContent.replace('৳', '');
-        total += parseFloat(totalText);
-      });
-      
-      document.getElementById("total-amount").textContent = total.toFixed(2);
-    }
-
-    // Remove an item from the cart
-    function removeItem(medicineId) {
-      if (!confirm("Are you sure you want to remove this item from your cart?")) {
-        return;
-      }
-
-      fetch(`/cart/remove/${medicineId}`, {
-        method: 'POST'
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.ok) {
-          // Remove the row from the table
-          const row = document.getElementById("item-" + medicineId);
-          row.remove();
-          
-          // Recalculate the total after removal
-          recalculateTotal();
-        } else {
-          alert("Failed to remove item.");
-        }
-      })
-      .catch(error => {
-        console.error("Error:", error);
-        alert("Failed to remove item.");
-      });
-    }
-  </script>
 {% endblock %}
+

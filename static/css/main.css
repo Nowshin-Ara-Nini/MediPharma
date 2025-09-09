@@ -51,12 +51,12 @@ nav .btn{background:var(--brand);color:#fff;padding:8px 12px;border-radius:8px}
 }
 
 .appointments-table th {
-  background-color: #4CAF50;
-  color: white;
+  background-color: lab(72.57% -19.39 -10.26);
+  color: rgb(245, 248, 249);
 }
 
 .appointments-table tr:nth-child(even) {
-  background-color: #f9f9f9;
+  background-color: #47b2b2;
 }
 
 .appointments-table tr:hover {

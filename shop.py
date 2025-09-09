@@ -101,19 +101,17 @@ def wishlist_page():
     if not uid:
         flash("Login required", "error")
         return redirect(url_for("auth.login_page"))
+
     with DB() as cur:
-        cur.execute("SELECT wishlist_id FROM wishlists WHERE user_id=%s", (uid,))
-        wishlist = cur.fetchone()
-        items = []
-        if wishlist:
-            cur.execute("""
-                SELECT wi.medicine_id, m.name, m.price, m.expiry_date
-                FROM wishlist_items wi
-                JOIN medicines m ON m.medicine_id=wi.medicine_id
-                WHERE wi.wishlist_id=%s
-            """, (wishlist["wishlist_id"],))
-            items = cur.fetchall()
-    return render_template("wishlist.html", wishlist=wishlist, items=items)
+        cur.execute("""
+            SELECT m.* FROM wishlist_items wi
+            JOIN wishlists w ON wi.wishlist_id = w.wishlist_id
+            JOIN medicines m ON wi.medicine_id = m.medicine_id
+            WHERE w.user_id=%s
+        """, (uid,))
+        items = cur.fetchall()
+
+    return render_template("wishlist.html", items=items)
 
 # Payment page route
 @shop_bp.route('/payment', methods=['GET', 'POST'])
@@ -295,3 +293,33 @@ def remove_cart_item(medicine_id):
 
     flash("Item removed from cart", "success")
     return redirect(url_for('shop.cart_page'))  # Redirect to the updated cart page
+
+# Add to wishlist (POST)
+@shop_bp.post("/wishlist/add")
+def add_to_wishlist():
+    uid = current_user_id()
+    if not uid:
+        flash("Login required", "error")
+        return redirect(url_for("auth.login_page"))
+
+    medicine_id = int(request.form["medicine_id"])
+
+    with DB() as cur:
+        # Ensure wishlist exists
+        cur.execute("SELECT wishlist_id FROM wishlists WHERE user_id=%s", (uid,))
+        wishlist = cur.fetchone()
+        if not wishlist:
+            cur.execute("INSERT INTO wishlists(user_id) VALUES(%s)", (uid,))
+            wishlist_id = cur.lastrowid
+        else:
+            wishlist_id = wishlist["wishlist_id"]
+
+        # Add if not already present
+        cur.execute("SELECT 1 FROM wishlist_items WHERE wishlist_id=%s AND medicine_id=%s",
+                    (wishlist_id, medicine_id))
+        if not cur.fetchone():
+            cur.execute("INSERT INTO wishlist_items(wishlist_id, medicine_id) VALUES(%s, %s)",
+                        (wishlist_id, medicine_id))
+
+    flash("Added to wishlist", "success")
+    return redirect(url_for("shop.wishlist_page"))

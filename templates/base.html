@@ -22,6 +22,7 @@
             <a href="{{ url_for('shop.cart_page') }}">🛒 Cart</a>
           {% endif %}
           {% if session.get('role') == 'pharmacist' %}
+            <a href="{{ url_for('shop.wishlist_page') }}">❤️ Wishlist</a>
             <a href="{{ url_for('pharmacist.pharmacist_medicines') }}">🗂 Inventory</a>
           {% elif session.get('role') == 'company' %}
             <a href="{{ url_for('company.company_medicines') }}">🗂 Inventory</a>

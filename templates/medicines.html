@@ -15,7 +15,11 @@
             <input type="number" name="qty" value="1" min="1" max="10" class="quantity-input">
             <button type="submit" class="btn add-to-cart-btn">Add to Cart</button>
           </form>
-
+          <!-- Add to Wishlist Form -->
+          <form action="{{ url_for('shop.add_to_wishlist') }}" method="POST">
+            <input type="hidden" name="medicine_id" value="{{ medicine.medicine_id }}">
+            <button type="submit" class="btn add-to-wishlist-btn">Add to Wishlist</button>
+          </form>
           <!-- Feedback Button -->
           <a href="{{ url_for('feedback', medicine_id=medicine.medicine_id) }}" class="btn feedback-btn">Leave Feedback</a>
           
